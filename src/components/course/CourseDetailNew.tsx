@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -194,7 +193,19 @@ export const CourseDetailNew: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { user } = useUser();
+  // Simple user identification system (no Clerk)
+  const [userId, setUserId] = useState<string>('');
+
+  // Initialize user ID on component mount
+  useEffect(() => {
+    let storedUserId = localStorage.getItem('simple_user_id');
+    if (!storedUserId) {
+      // Generate a simple unique ID for this user
+      storedUserId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+      localStorage.setItem('simple_user_id', storedUserId);
+    }
+    setUserId(storedUserId);
+  }, []);
   const { data: onboardingData } = useOnboardingData();
   
   // Get time commitment from URL or default to 'moderate'
@@ -208,6 +219,7 @@ export const CourseDetailNew: React.FC = () => {
   // Get the current time commitment configuration
   const commitmentConfig = timeCommitmentConfig[timeCommitment];
   
+  // Get the progress functions for the current time commitment
   // Get the progress functions for the current time commitment
   const progressFunctionsForCommitment = progressFunctions[timeCommitment];
 
@@ -252,12 +264,12 @@ export const CourseDetailNew: React.FC = () => {
           modules: updatedModules
         });
         
-        // Load completed modules from localStorage
+        // Load completed modules from localStorage as fallback
         const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
           const completed = new Set<number>();
-          progress.modules.forEach((m: {id: number, completed: boolean}) => {
+          progress.modules?.forEach((m: {id: number, completed: boolean}) => {
             if (m.completed) completed.add(m.id);
           });
           setCompletedModules(completed);
@@ -276,6 +288,42 @@ export const CourseDetailNew: React.FC = () => {
 
     fetchCourseData();
   }, [courseId, timeCommitment, navigate]);
+
+  // Load user's progress from database when userId is available
+  useEffect(() => {
+    const loadUserProgress = async () => {
+      if (!userId || !courseId) return;
+
+      try {
+        const userProgress = await progressFunctionsForCommitment.check({ userId });
+        const completed = new Set<number>();
+
+        userProgress.forEach((progress: any) => {
+          if (progress.is_completed && progress.current_course === course?.title) {
+            completed.add(progress.module_id);
+          }
+        });
+
+        setCompletedModules(completed);
+      } catch (error) {
+        console.error('Error loading user progress:', error);
+        // Fallback to localStorage if database fails
+        const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          const completed = new Set<number>();
+          progress.modules?.forEach((m: {id: number, completed: boolean}) => {
+            if (m.completed) completed.add(m.id);
+          });
+          setCompletedModules(completed);
+        }
+      }
+    };
+
+    if (userId && course) {
+      loadUserProgress();
+    }
+  }, [userId, course, progressFunctionsForCommitment]);
 
   // Show loading state
   if (loading) {
@@ -334,71 +382,71 @@ export const CourseDetailNew: React.FC = () => {
   }
 
   const toggleModuleCompletion = async (moduleId: number) => {
-    if (!user || !courseId || !course) return;
+    if (!userId || !courseId || !course) return;
 
     try {
       const isCurrentlyCompleted = completedModules.has(moduleId);
       const newCompletedModules = new Set(completedModules);
       const currentModule = course.modules.find(m => m.id === moduleId);
-      
+
       // Prepare common parameters
       const currentModuleTitle = currentModule?.title || `Module ${moduleId}`;
       const courseTitle = course.title || courseId;
-      const learningGoal = onboardingData?.learning_goal || '';
-      
+      const learningGoal = onboardingData?.learning_goal || 'General Learning';
+
       if (isCurrentlyCompleted) {
         // Delete the progress record for this module
-        await progressFunctionsForCommitment.delete({
+        const deleteResult = await progressFunctionsForCommitment.delete({
           moduleId,
-          userId: user.id,
+          userId,
           currentCourse: courseTitle,
           currentModule: currentModuleTitle
         });
-        newCompletedModules.delete(moduleId);
+
+        if (deleteResult.success) {
+          newCompletedModules.delete(moduleId);
+          console.log(`Module ${moduleId} unmarked as completed`);
+        } else {
+          throw new Error(deleteResult.error || 'Failed to delete progress');
+        }
       } else {
-        try {
-          // First check if we have an existing progress record
-          const existingProgress = await progressFunctionsForCommitment.check({ userId: user.id });
-          
-          if (existingProgress && existingProgress.length > 0) {
-            // Update existing record
-            await progressFunctionsForCommitment.insert({
-              userId: user.id,
-              learningGoal,
-              currentCourse: courseTitle,
-              currentModule: currentModuleTitle,
-              totalModulesInCourse: course.totalModules,
-              isCompleted: true,
-              moduleId
-            });
-          } else {
-            // Create new record
-            await progressFunctionsForCommitment.insert({
-              userId: user.id,
-              learningGoal,
-              currentCourse: courseTitle,
-              currentModule: currentModuleTitle,
-              totalModulesInCourse: course.totalModules,
-              isCompleted: true,
-              moduleId
-            });
-          }
+        // Insert new progress record
+        const insertResult = await progressFunctionsForCommitment.insert({
+          userId,
+          learningGoal,
+          currentCourse: courseTitle,
+          currentModule: currentModuleTitle,
+          totalModulesInCourse: course.modules.length,
+          isCompleted: true,
+          moduleId
+        });
+
+        if (insertResult.success) {
           newCompletedModules.add(moduleId);
-        } catch (error) {
-          console.error('Error updating progress:', error);
-          throw error; // Re-throw the error to be caught by the outer catch
+          console.log(`Module ${moduleId} marked as completed`);
+        } else {
+          throw new Error(insertResult.error || 'Failed to insert progress');
         }
       }
-      
+
       // Update the UI state
       setCompletedModules(newCompletedModules);
-      
+
+      // Save progress to localStorage as backup
+      const progressData = {
+        courseId,
+        modules: Array.from(newCompletedModules).map(id => ({ id, completed: true }))
+      };
+      localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
+
     } catch (error) {
       console.error('Error in toggleModuleCompletion:', error);
-      // Show error to user (using console.error since toast is a stub)
-      console.error('Failed to update module progress. Please try again.');
-      // Revert the UI state on error
-      setCompletedModules(new Set(completedModules));
+      toast({
+        title: 'Error',
+        description: 'Failed to update module progress. Please try again.',
+        variant: 'destructive'
+      });
+      // Don't revert UI state on error - let user try again
     }
   };
 
