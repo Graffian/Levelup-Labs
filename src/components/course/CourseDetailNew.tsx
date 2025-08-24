@@ -381,7 +381,10 @@ export const CourseDetailNew: React.FC = () => {
       // Prepare common parameters
       const currentModuleTitle = currentModule?.title || `Module ${moduleId}`;
       const courseTitle = course.title || courseId;
-      const learningGoal = onboardingData?.learning_goal || 'General Learning';
+
+      // Get learning goal from URL parameters first, then fallback to onboarding data
+      const urlParams = new URLSearchParams(location.search);
+      const learningGoal = urlParams.get('goal') || onboardingData?.learning_goal || 'General Learning';
 
       if (isCurrentlyCompleted) {
         // Delete the progress record for this module
