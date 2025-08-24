@@ -30,6 +30,15 @@ import {
 
 // Import course data
 import { htmlCssMastery } from '@/data/courses/htmlCssMastery';
+import { javascriptEssentials } from '@/data/courses/javascriptEssentials';
+import { reactCompleteGuide } from '@/data/courses/reactCompleteGuide';
+import {
+  typescriptReact,
+  nodejsExpress,
+  databaseSql,
+  designPrinciples,
+  pythonDataScience
+} from '@/data/courses/additionalCourses';
 import { timeCommitmentConfig } from '@/data/timeCommitment';
 import { playlistsByTimeCommitment } from '@/data/courses/playlists';
 
@@ -173,7 +182,14 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
 // Course data mapping
 const courseDataMap: Record<string, CourseData> = {
   'html-css-mastery': htmlCssMastery,
-  // Add other courses here when they're created
+  'javascript-essentials': javascriptEssentials,
+  'react-complete-guide': reactCompleteGuide,
+  'typescript-react': typescriptReact,
+  'nodejs-express': nodejsExpress,
+  'database-sql': databaseSql,
+  'design-principles': designPrinciples,
+  'python-data-science': pythonDataScience,
+  // Add more courses as needed
 };
 
 export const CourseDetailNew: React.FC = () => {
