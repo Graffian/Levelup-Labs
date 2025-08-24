@@ -25,6 +25,7 @@ async function ModerateProgressDelete(moduleId: number, userId: string, currentC
 
 async function ModerateProgressCheck(userId: string): Promise<any[]> {
     try {
+        console.log("ModerateProgressCheck: Querying for userId:", userId);
         const { data, error } = await supabase.from("moderate_user_progress")
                                              .select("*")
                                              .eq("clerk_user_id", userId)
@@ -34,6 +35,7 @@ async function ModerateProgressCheck(userId: string): Promise<any[]> {
             return []
         }
 
+        console.log("ModerateProgressCheck: Found data:", data);
         return data || []
     } catch (error) {
         console.error("Check error:", error)
@@ -53,20 +55,18 @@ async function ModerateProgressInsert(
     moduleId: number
 ): Promise<{ success: boolean; error?: string; data?: any }> {
     try {
-        const insertData = {
-            clerk_user_id: userId,
-            learning_goal: learningGoal,
-            current_course: currentCourse,
-            current_module: currentModule,
-            total_modules_in_course: totalModulesInCourse,
-            is_completed: isCompleted,
-            module_id: moduleId
-        };
-
-        console.log("Attempting to insert progress data:", insertData);
-
         const { data, error } = await supabase.from("moderate_user_progress")
-                                             .insert([insertData])
+                                             .insert([
+                                                {
+                                                    clerk_user_id: userId,
+                                                    learning_goal: learningGoal,
+                                                    current_course: currentCourse,
+                                                    current_module: currentModule,
+                                                    total_modules_in_course: totalModulesInCourse,
+                                                    is_completed: isCompleted,
+                                                    module_id: moduleId
+                                                }
+                                             ])
                                              .select()
 
         if (error) {
