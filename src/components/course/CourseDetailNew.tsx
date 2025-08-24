@@ -30,6 +30,23 @@ import {
 
 // Import course data
 import { htmlCssMastery } from '@/data/courses/htmlCssMastery';
+import { javascriptEssentials } from '@/data/courses/javascriptEssentials';
+import { reactCompleteGuide } from '@/data/courses/reactCompleteGuide';
+import {
+  typescriptReact,
+  nodejsExpress,
+  databaseSql,
+  designPrinciples,
+  pythonDataScience
+} from '@/data/courses/additionalCourses';
+import {
+  uxDesign,
+  figmaCourse,
+  adobeSuite,
+  statisticsProbability,
+  mlFundamentals,
+  deepLearningTensorflow
+} from '@/data/courses/remainingCourses';
 import { timeCommitmentConfig } from '@/data/timeCommitment';
 import { playlistsByTimeCommitment } from '@/data/courses/playlists';
 
@@ -173,7 +190,19 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
 // Course data mapping
 const courseDataMap: Record<string, CourseData> = {
   'html-css-mastery': htmlCssMastery,
-  // Add other courses here when they're created
+  'javascript-essentials': javascriptEssentials,
+  'react-complete-guide': reactCompleteGuide,
+  'typescript-react': typescriptReact,
+  'nodejs-express': nodejsExpress,
+  'database-sql': databaseSql,
+  'design-principles': designPrinciples,
+  'ux-design': uxDesign,
+  'figma-course': figmaCourse,
+  'adobe-suite': adobeSuite,
+  'python-data-science': pythonDataScience,
+  'statistics-probability': statisticsProbability,
+  'ml-fundamentals': mlFundamentals,
+  'deep-learning-tensorflow': deepLearningTensorflow,
 };
 
 export const CourseDetailNew: React.FC = () => {
@@ -448,110 +477,269 @@ export const CourseDetailNew: React.FC = () => {
     : 0;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Course Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-          <Button 
-            variant="ghost" 
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
+      {/* Hero Section */}
+      <div className="relative overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600">
+        {/* Animated Background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-white/10 rounded-full mix-blend-overlay filter blur-xl animate-blob" />
+          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-cyan-300/20 rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-2000" />
+          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-purple-300/20 rounded-full mix-blend-overlay filter blur-xl animate-blob animation-delay-4000" />
+        </div>
+
+        <div className="relative container mx-auto px-4 py-12">
+          {/* Back Button */}
+          <Button
+            variant="ghost"
             onClick={() => navigate(-1)}
-            className="mb-4"
+            className="mb-6 text-white hover:bg-white/20 border border-white/20"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Courses
           </Button>
-          <h1 className="text-3xl font-bold tracking-tight">{course.title}</h1>
-          <p className="text-muted-foreground mt-2">{course.description}</p>
-          
-          <div className="flex items-center gap-4 mt-4">
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Clock className="mr-1 h-4 w-4" />
-              {course.duration}
+
+          {/* Course Header */}
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
+                  <Code2 className="h-8 w-8 text-white" />
+                </div>
+                <Badge variant="outline" className="bg-white/20 border-white/30 text-white backdrop-blur-sm">
+                  {course.level}
+                </Badge>
+              </div>
+
+              <h1 className="text-4xl lg:text-5xl font-bold text-white mb-4 tracking-tight">
+                {course.title}
+              </h1>
+              <p className="text-xl text-white/90 mb-6 max-w-2xl leading-relaxed">
+                {course.description}
+              </p>
+
+              <div className="flex flex-wrap items-center gap-6">
+                <div className="flex items-center gap-2 text-white/90">
+                  <Clock className="h-5 w-5" />
+                  <span className="font-medium">{course.duration}</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <BookOpen className="h-5 w-5" />
+                  <span className="font-medium">{course.modules.length} modules</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <Users className="h-5 w-5" />
+                  <span className="font-medium">15,000+ students</span>
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <Award className="h-5 w-5" />
+                  <span className="font-medium">Certificate included</span>
+                </div>
+              </div>
             </div>
-            <div className="flex items-center text-sm text-muted-foreground">
-              <BookOpen className="mr-1 h-4 w-4" />
-              {course.modules.length} modules
+
+            <div className="lg:text-right">
+              <Badge className={`mb-4 bg-gradient-to-r ${commitmentConfig.badge.color === 'green' ? 'from-green-500 to-emerald-500' :
+                commitmentConfig.badge.color === 'blue' ? 'from-blue-500 to-cyan-500' :
+                commitmentConfig.badge.color === 'orange' ? 'from-orange-500 to-red-500' :
+                'from-purple-500 to-pink-500'} text-white border-0 px-4 py-2 text-sm font-medium`}>
+                {commitmentConfig.name}
+              </Badge>
+
+              {/* Progress Circle */}
+              <div className="relative w-24 h-24 mx-auto lg:mx-0">
+                <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="rgba(255,255,255,0.2)"
+                    strokeWidth="8"
+                    fill="none"
+                  />
+                  <circle
+                    cx="50"
+                    cy="50"
+                    r="40"
+                    stroke="white"
+                    strokeWidth="8"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeDasharray={`${2 * Math.PI * 40}`}
+                    strokeDashoffset={`${2 * Math.PI * 40 * (1 - progress / 100)}`}
+                    className="transition-all duration-500 ease-in-out"
+                  />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-2xl font-bold text-white">{progress}%</span>
+                </div>
+              </div>
+              <p className="text-white/80 text-sm mt-2">Course Progress</p>
             </div>
-            <Badge variant="secondary">{course.level}</Badge>
           </div>
         </div>
-        
-        <div className="mt-4 md:mt-0">
-          <Badge variant="outline" className={`bg-${commitmentConfig.bgColor} border-${commitmentConfig.badge.color}-200`}>
-            {commitmentConfig.name}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium">Course Progress</span>
-          <span className="text-sm text-muted-foreground">{progress}%</span>
-        </div>
-        <Progress value={progress} className="h-2" />
       </div>
 
       {/* Course Modules */}
-      <div className="grid gap-4">
-        <h2 className="text-xl font-semibold">Course Modules</h2>
+      <div className="container mx-auto px-4 py-12">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-slate-900 mb-4">Course Curriculum</h2>
+          <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+            Master {course.title.toLowerCase()} through our carefully structured learning modules
+          </p>
+        </div>
+
         {course?.modules?.length > 0 ? (
-          <div className="space-y-4">
-            {course.modules.map((module) => {
+          <div className="grid gap-6 max-w-4xl mx-auto">
+            {course.modules.map((module, index) => {
               const isCompleted = completedModules.has(module.id);
-              
+
               return (
-                <Card key={module.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-lg">{module.title}</CardTitle>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{module.duration}</span>
+                <Card
+                  key={module.id}
+                  className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-l-4 ${
+                    isCompleted
+                      ? 'border-l-green-500 bg-gradient-to-r from-green-50 to-white'
+                      : 'border-l-blue-500 bg-gradient-to-r from-blue-50 to-white hover:from-blue-100'
+                  }`}
+                >
+                  {/* Module Number Badge */}
+                  <div className={`absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                    isCompleted ? 'bg-green-500' : 'bg-blue-500'
+                  }`}>
+                    {isCompleted ? <Check className="h-5 w-5" /> : index + 1}
+                  </div>
+
+                  <CardHeader className="pb-4 pl-20">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                      <div className="flex-1">
+                        <CardTitle className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
+                          {module.title}
+                        </CardTitle>
+                        <p className="text-slate-600 leading-relaxed">{module.description}</p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 text-slate-500">
+                          <Clock className="h-4 w-4" />
+                          <span className="text-sm font-medium">{module.duration}</span>
+                        </div>
+
                         <Button
                           variant={isCompleted ? "default" : "outline"}
                           size="sm"
                           onClick={() => toggleModuleCompletion(module.id)}
-                          className={`h-8 w-8 p-0 rounded-full transition-colors ${
+                          className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
                             isCompleted
-                              ? 'bg-green-600 hover:bg-green-700 text-white'
-                              : 'border-2 border-gray-300 hover:border-green-500'
+                              ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
+                              : 'border-2 border-slate-300 hover:border-green-500 hover:bg-green-50'
                           }`}
                         >
-                          <Check className={`h-4 w-4 ${isCompleted ? 'text-white' : 'text-gray-400'}`} />
+                          <Check className={`h-5 w-5 transition-all duration-300 ${
+                            isCompleted ? 'text-white' : 'text-slate-400 group-hover:text-green-500'
+                          }`} />
                         </Button>
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">{module.description}</p>
-                    
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {module.topics?.map((topic, index) => (
-                        <Badge key={index} variant="outline" className="text-xs">
+
+                  <CardContent className="pl-20 pt-0">
+                    {/* Topics */}
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {module.topics?.map((topic, topicIndex) => (
+                        <Badge
+                          key={topicIndex}
+                          variant="secondary"
+                          className="text-xs px-3 py-1 bg-white/70 text-slate-700 border border-slate-200 hover:bg-slate-100 transition-colors"
+                        >
                           {topic}
                         </Badge>
                       ))}
                     </div>
-                    
-                    {module.playlistUrl && (
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-3">
+                      {module.playlistUrl && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="bg-white hover:bg-red-50 border-red-200 text-red-600 hover:text-red-700 hover:border-red-300 transition-all duration-300"
+                          onClick={() => window.open(module.playlistUrl, '_blank')}
+                        >
+                          <Youtube className="mr-2 h-4 w-4" />
+                          Watch on YouTube
+                        </Button>
+                      )}
+
                       <Button
-                        variant="outline"
+                        variant="ghost"
                         size="sm"
-                        className="mt-2"
-                        onClick={() => window.open(module.playlistUrl, '_blank')}
+                        className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
                       >
-                        <Youtube className="mr-2 h-4 w-4" />
-                        Watch on YouTube
+                        <PlayCircle className="mr-2 h-4 w-4" />
+                        Start Module
                       </Button>
-                    )}
+                    </div>
                   </CardContent>
+
+                  {/* Completion indicator line */}
+                  {isCompleted && (
+                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-600"></div>
+                  )}
                 </Card>
               );
             })}
           </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">No modules available for this course.</p>
+          <div className="text-center py-16">
+            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+              <BookOpen className="h-8 w-8 text-slate-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">No modules available</h3>
+            <p className="text-slate-600">This course content is being prepared. Check back soon!</p>
+          </div>
+        )}
+
+        {/* Course Stats */}
+        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+          <Card className="text-center p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+            <div className="w-12 h-12 mx-auto mb-4 bg-blue-500 rounded-full flex items-center justify-center">
+              <Users className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">15,000+</h3>
+            <p className="text-slate-600">Students Enrolled</p>
+          </Card>
+
+          <Card className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
+            <div className="w-12 h-12 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
+              <Star className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">4.8/5</h3>
+            <p className="text-slate-600">Average Rating</p>
+          </Card>
+
+          <Card className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200">
+            <div className="w-12 h-12 mx-auto mb-4 bg-purple-500 rounded-full flex items-center justify-center">
+              <Award className="h-6 w-6 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-2">95%</h3>
+            <p className="text-slate-600">Completion Rate</p>
+          </Card>
+        </div>
+
+        {/* Completion Celebration */}
+        {progress === 100 && (
+          <div className="mt-12 text-center">
+            <div className="inline-block p-8 bg-gradient-to-r from-green-400 via-blue-500 to-purple-600 rounded-2xl text-white mb-6">
+              <div className="animate-bounce mb-4">
+                <Award className="h-16 w-16 mx-auto" />
+              </div>
+              <h3 className="text-2xl font-bold mb-2">Congratulations! 🎉</h3>
+              <p className="text-lg opacity-90">You've completed {course.title}!</p>
+            </div>
+            <Button size="lg" className="bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90 text-white px-8 py-3">
+              <Award className="mr-2 h-5 w-5" />
+              Download Certificate
+            </Button>
           </div>
         )}
       </div>
