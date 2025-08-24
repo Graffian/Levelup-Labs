@@ -39,6 +39,14 @@ import {
   designPrinciples,
   pythonDataScience
 } from '@/data/courses/additionalCourses';
+import {
+  uxDesign,
+  figmaCourse,
+  adobeSuite,
+  statisticsProbability,
+  mlFundamentals,
+  deepLearningTensorflow
+} from '@/data/courses/remainingCourses';
 import { timeCommitmentConfig } from '@/data/timeCommitment';
 import { playlistsByTimeCommitment } from '@/data/courses/playlists';
 
@@ -188,8 +196,13 @@ const courseDataMap: Record<string, CourseData> = {
   'nodejs-express': nodejsExpress,
   'database-sql': databaseSql,
   'design-principles': designPrinciples,
+  'ux-design': uxDesign,
+  'figma-course': figmaCourse,
+  'adobe-suite': adobeSuite,
   'python-data-science': pythonDataScience,
-  // Add more courses as needed
+  'statistics-probability': statisticsProbability,
+  'ml-fundamentals': mlFundamentals,
+  'deep-learning-tensorflow': deepLearningTensorflow,
 };
 
 export const CourseDetailNew: React.FC = () => {
