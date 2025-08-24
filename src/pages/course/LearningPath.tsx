@@ -262,40 +262,53 @@ const LearningPath = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-20 pb-12 px-4 sm:px-6 lg:px-8">
+      <section className="relative pt-20 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
         <div className="max-w-6xl mx-auto text-center">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-200 text-slate-700 text-sm font-semibold mb-6">
-            <Icon className="w-4 h-4 mr-2 text-blue-500" />
+          <div className="inline-flex items-center px-6 py-3 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-semibold mb-8">
+            <Icon className="w-5 h-5 mr-3 text-cyan-400" />
             Learning Path
           </div>
-          
-          <h1 className={`text-4xl sm:text-5xl lg:text-6xl font-bold mb-4 bg-gradient-to-r ${pathData.gradient} bg-clip-text text-transparent`}>
+
+          <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 text-white tracking-tight">
             {pathData.title}
+            <span className={`block text-transparent bg-gradient-to-r ${pathData.gradient} bg-clip-text mt-2`}>
+              Mastery
+            </span>
           </h1>
-          
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto mb-8">
+
+          <p className="text-xl text-slate-300 max-w-4xl mx-auto mb-10 leading-relaxed">
             {pathData.description}
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-            <div className="flex items-center gap-2 text-slate-600">
-              <Clock className="w-5 h-5" />
-              <span>{pathData.totalDuration}</span>
+          <div className="flex flex-wrap items-center justify-center gap-8 mb-10">
+            <div className="flex items-center gap-3 text-white/90 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <Clock className="w-5 h-5 text-cyan-400" />
+              <span className="font-medium">{pathData.totalDuration}</span>
             </div>
-            <div className="flex items-center gap-2 text-slate-600">
-              <BookOpen className="w-5 h-5" />
-              <span>{totalCourses} Courses</span>
+            <div className="flex items-center gap-3 text-white/90 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <BookOpen className="w-5 h-5 text-green-400" />
+              <span className="font-medium">{totalCourses} Courses</span>
             </div>
-            <div className="flex items-center gap-2 text-slate-600">
-              <Award className="w-5 h-5" />
-              <span>Certificate</span>
+            <div className="flex items-center gap-3 text-white/90 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <Award className="w-5 h-5 text-yellow-400" />
+              <span className="font-medium">Certificate</span>
+            </div>
+            <div className="flex items-center gap-3 text-white/90 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2">
+              <Users className="w-5 h-5 text-pink-400" />
+              <span className="font-medium">50,000+ Students</span>
             </div>
           </div>
 
-          <Button size="lg" className={`bg-gradient-to-r ${pathData.gradient} hover:opacity-90 text-white px-8 py-3 text-lg`}>
-            <Play className="w-5 h-5 mr-2" />
-            Start Learning Path
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button size="lg" className={`bg-gradient-to-r ${pathData.gradient} hover:opacity-90 text-white px-10 py-4 text-lg font-semibold rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300`}>
+              <Play className="w-6 h-6 mr-3" />
+              Start Learning Path
+            </Button>
+            <Button variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 px-10 py-4 text-lg font-semibold rounded-full backdrop-blur-sm">
+              <Calendar className="w-6 h-6 mr-3" />
+              View Schedule
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -331,76 +344,112 @@ const LearningPath = () => {
                 </div>
 
                 {/* Courses Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 ml-16">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 ml-16">
                   {section.courses.map((course, courseIndex) => (
-                    <Card key={courseIndex} className="hover:shadow-lg transition-shadow duration-300 border border-slate-200">
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CardTitle className="text-lg font-semibold text-slate-900">
-                                {course.title}
-                              </CardTitle>
-                              {course.recommended && (
-                                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                                  <Star className="w-3 h-3 mr-1" />
-                                  Recommended
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-4 text-sm text-slate-600">
-                              <div className="flex items-center gap-1">
-                                <Clock className="w-4 h-4" />
-                                {course.duration}
+                    <Card key={courseIndex} className={`group relative overflow-hidden transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 border-0 ${
+                      course.completed ? 'bg-gradient-to-br from-green-50 to-emerald-50' : 'bg-white hover:bg-gradient-to-br hover:from-blue-50 hover:to-cyan-50'
+                    }`}>
+                      {/* Gradient border effect */}
+                      <div className={`absolute inset-0 bg-gradient-to-r ${
+                        course.completed ? 'from-green-400 to-emerald-500' :
+                        section.color === 'purple' ? 'from-purple-400 to-pink-500' :
+                        section.color === 'blue' ? 'from-blue-400 to-cyan-500' :
+                        section.color === 'green' ? 'from-green-400 to-emerald-500' :
+                        section.color === 'pink' ? 'from-pink-400 to-rose-500' :
+                        'from-indigo-400 to-purple-500'
+                      } opacity-0 group-hover:opacity-100 transition-opacity duration-300`} style={{ padding: '2px' }}>
+                        <div className="w-full h-full bg-white rounded-lg"></div>
+                      </div>
+
+                      <div className="relative z-10 p-6">
+                        <CardHeader className="p-0 pb-4">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3 mb-3">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                                  course.completed ? 'bg-green-500' : `bg-${section.color}-500`
+                                } text-white`}>
+                                  {course.completed ? <CheckCircle className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+                                </div>
+                                <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                  {course.title}
+                                </CardTitle>
                               </div>
-                              <Badge variant="outline" className={`
-                                ${course.level === 'Beginner' ? 'border-green-200 text-green-700' :
-                                  course.level === 'Intermediate' ? 'border-blue-200 text-blue-700' :
-                                  'border-red-200 text-red-700'}
-                              `}>
-                                {course.level}
-                              </Badge>
+
+                              <div className="flex items-center gap-4 mb-3">
+                                {course.recommended && (
+                                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 shadow-lg">
+                                    <Star className="w-3 h-3 mr-1" />
+                                    Recommended
+                                  </Badge>
+                                )}
+                                <Badge variant="outline" className={`border-2 font-medium ${
+                                  course.level === 'Beginner' ? 'border-green-300 text-green-700 bg-green-50' :
+                                  course.level === 'Intermediate' ? 'border-blue-300 text-blue-700 bg-blue-50' :
+                                  'border-red-300 text-red-700 bg-red-50'
+                                }`}>
+                                  {course.level}
+                                </Badge>
+                              </div>
+
+                              <div className="flex items-center gap-2 text-slate-600 mb-4">
+                                <Clock className="w-4 h-4" />
+                                <span className="font-medium">{course.duration}</span>
+                              </div>
+                            </div>
+
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                              course.completed ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-400 group-hover:bg-blue-500 group-hover:text-white'
+                            }`}>
+                              <CheckCircle className="w-5 h-5" />
                             </div>
                           </div>
-                          <CheckCircle className={`w-6 h-6 ${course.completed ? 'text-green-500' : 'text-slate-300'}`} />
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="pt-0">
-                        <div className="flex flex-wrap gap-1 mb-4">
-                          {course.topics.map((topic, topicIndex) => (
-                            <Badge key={topicIndex} variant="secondary" className="text-xs">
-                              {topic}
-                            </Badge>
-                          ))}
-                        </div>
-                        
-                        <Button
-                          variant="outline"
-                          className="w-full hover:bg-slate-50"
-                          disabled={course.completed}
-                          onClick={() => {
-                            if (!course.completed) {
-                              const courseSlug = courseSlugMap[course.title];
-                              if (courseSlug) {
-                                navigate(`/course/${courseSlug}?timeCommitment=${timeId}&goal=${goalId}&experience=${experienceId}`);
+                        </CardHeader>
+
+                        <CardContent className="p-0">
+                          <div className="flex flex-wrap gap-2 mb-6">
+                            {course.topics.map((topic, topicIndex) => (
+                              <Badge key={topicIndex} variant="secondary" className="text-xs bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors">
+                                {topic}
+                              </Badge>
+                            ))}
+                          </div>
+
+                          <Button
+                            className={`w-full font-semibold py-3 rounded-xl transition-all duration-300 ${
+                              course.completed
+                                ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
+                                : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white shadow-lg hover:shadow-xl'
+                            }`}
+                            disabled={course.completed}
+                            onClick={() => {
+                              if (!course.completed) {
+                                const courseSlug = courseSlugMap[course.title];
+                                if (courseSlug) {
+                                  navigate(`/course/${courseSlug}?timeCommitment=${timeId}&goal=${goalId}&experience=${experienceId}`);
+                                }
                               }
-                            }
-                          }}
-                        >
-                          {course.completed ? (
-                            <>
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Completed
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-2" />
-                              Start Course
-                            </>
-                          )}
-                        </Button>
-                      </CardContent>
+                            }}
+                          >
+                            {course.completed ? (
+                              <>
+                                <CheckCircle className="w-5 h-5 mr-2" />
+                                Completed
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-5 h-5 mr-2" />
+                                Start Course
+                              </>
+                            )}
+                          </Button>
+                        </CardContent>
+                      </div>
+
+                      {/* Progress indicator */}
+                      {course.completed && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-emerald-500"></div>
+                      )}
                     </Card>
                   ))}
                 </div>
