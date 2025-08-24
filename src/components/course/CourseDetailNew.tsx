@@ -195,7 +195,7 @@ export const CourseDetailNew: React.FC = () => {
     }
     setUserId(storedUserId);
   }, []);
-  const { data: onboardingData } = useOnboardingData();
+  const { data: onboardingData } = useSimpleOnboardingData(userId);
   
   // Get time commitment from URL or default to 'moderate'
   const timeCommitment = (new URLSearchParams(location.search).get('timeCommitment') || 'moderate') as TimeCommitmentLevel;
