@@ -53,18 +53,20 @@ async function ModerateProgressInsert(
     moduleId: number
 ): Promise<{ success: boolean; error?: string; data?: any }> {
     try {
+        const insertData = {
+            clerk_user_id: userId,
+            learning_goal: learningGoal,
+            current_course: currentCourse,
+            current_module: currentModule,
+            total_modules_in_course: totalModulesInCourse,
+            is_completed: isCompleted,
+            module_id: moduleId
+        };
+
+        console.log("Attempting to insert progress data:", insertData);
+
         const { data, error } = await supabase.from("moderate_user_progress")
-                                             .insert([
-                                                {
-                                                    clerk_user_id: userId,
-                                                    learning_goal: learningGoal,
-                                                    current_course: currentCourse,
-                                                    current_module: currentModule,
-                                                    total_modules_in_course: totalModulesInCourse,
-                                                    is_completed: isCompleted,
-                                                    module_id: moduleId
-                                                }
-                                             ])
+                                             .insert([insertData])
                                              .select()
 
         if (error) {
