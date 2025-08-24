@@ -1,15 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import RouterHeader from "@/components/layout/RouterHeader";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ArrowRight, Sparkles, Trophy, Target } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
-import { useAuth } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import OnboardingCheck from "@/components/database/onboarding/OnboardingCheck";
 import OnboardingInsert from "@/components/database/onboarding/OnboardingInsert";
-
 
 // Define the onboarding steps in order
 const ONBOARDING_STEPS = [
@@ -62,18 +60,15 @@ export const useOnboarding = () => {
 
 type OnboardingLayoutProps = {};
 
-
 const OnboardingLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const { user } = useUser();
-  const {isSignedIn , userId} = useAuth()
-  // Removed enrollInCourse for UI-only mode
-
-  console.log("user", user);
+  const { isSignedIn, userId, getToken } = useAuth();
 
   const [onboardingData, setOnboardingData] = useState<Record<string, any>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Determine current step index
   const currentStepIndex = ONBOARDING_STEPS.findIndex(
@@ -92,55 +87,85 @@ const OnboardingLayout = () => {
     setOnboardingData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const generateCourseRoute = (
-    learningGoal: string,
-    timeCommitment: string,
-    experienceLevel: string,
-  ) => {
-    return `/learning-path/${learningGoal}/${timeCommitment}/${experienceLevel}`;
-  };
+  const handleSaveOnboardingData = useCallback(async () => {
+    if (!userId || !isSignedIn) {
+      setError("User not authenticated");
+      return false;
+    }
 
-  const goToNextStep = () => {
-    if (!canContinue) return;
+    const { learning_goal, time_commitment, experience_level } = onboardingData;
 
-    // After selecting Web Dev, route directly to WebDevCourse
-    if (isLastStep && isSignedIn) {
-      // If this is the last step, finish onboarding and navigate to specific course path
-      const { learning_goal, time_commitment, experience_level } =
-        onboardingData;
-      const coursePath = generateCourseRoute(
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // First check if the user already has onboarding data
+      const checkResult = await OnboardingCheck(
+        getToken,
+        userId,
         learning_goal,
         time_commitment,
-        experience_level,
+        experience_level
       );
 
-      console.log("Onboarding complete with data:", onboardingData);
+      if (checkResult.error) {
+        throw checkResult.error;
+      }
 
-      console.log("Navigating to course path:", coursePath);
-      OnboardingCheck(userId , learning_goal , time_commitment , experience_level).then((data)=>{
-        if(!data){
-          OnboardingInsert(userId , learning_goal , time_commitment , experience_level)
-        }else{
-          console.log("user already there with all the onboarding data nothing needs to be updated" , data)
+      if (!checkResult.exists) {
+        // If no existing data, insert new record
+        const insertResult = await OnboardingInsert(getToken, {
+          clerk_user_id: userId,
+          learning_goal,
+          time_commitment,
+          experience_level,
+        });
+
+        if (!insertResult.success) {
+          throw insertResult.error || new Error("Failed to save onboarding data");
         }
-      }).catch((err)=>{
-        console.error(err)
-      })
-      navigate(coursePath);
-      return;
-    }
-    // No next step, but keep fallback for extensibility
-    if (ONBOARDING_STEPS[currentStepIndex + 1]) {
-      navigate(ONBOARDING_STEPS[currentStepIndex + 1].path);
-    }
-  };
+      } else if (checkResult.needsUpdate) {
+        // Data exists and was updated, we can use checkResult.data
+        console.log("Onboarding data updated");
+      } else {
+        // Data exists and is up to date
+        console.log("Onboarding data is up to date");
+      }
 
-  const goToPreviousStep = () => {
-    if (isFirstStep) {
-      return; // We're at the first step
+      return true;
+    } catch (error) {
+      console.error("Error saving onboarding data:", error);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-    navigate(ONBOARDING_STEPS[currentStepIndex - 1].path);
-  };
+  }, [onboardingData, userId, isSignedIn, getToken]);
+
+  const goToNextStep = useCallback(async () => {
+    if (!canContinue) return;
+
+    if (isLastStep) {
+      // On the last step, save the data before proceeding
+      const success = await handleSaveOnboardingData();
+      if (success) {
+        navigate(`/learning-path/${onboardingData.learning_goal}/${onboardingData.time_commitment}/${onboardingData.experience_level}`);
+      }
+    } else {
+      const nextStep = ONBOARDING_STEPS[currentStepIndex + 1];
+      if (nextStep) {
+        navigate(nextStep.path);
+      }
+    }
+  }, [canContinue, currentStepIndex, isLastStep, navigate, onboardingData, handleSaveOnboardingData]);
+
+  const goToPreviousStep = useCallback(() => {
+    if (isFirstStep) return;
+    const prevStep = ONBOARDING_STEPS[currentStepIndex - 1];
+    if (prevStep) {
+      navigate(prevStep.path);
+    }
+  }, [currentStepIndex, isFirstStep, navigate]);
 
   const progress = ((currentStepIndex + 1) / ONBOARDING_STEPS.length) * 100;
 
@@ -157,162 +182,69 @@ const OnboardingLayout = () => {
         canContinue,
       }}
     >
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-        {/* Decorative background elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" />
-          <div className="absolute top-1/3 right-1/4 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" />
-          <div className="absolute bottom-1/4 left-1/3 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" />
-        </div>
-
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         <RouterHeader />
-
-        <main className="relative z-10 flex flex-col items-center justify-center min-h-[calc(100vh-80px)] p-2 sm:p-4">
-          {/* Progress Steps */}
-          <div className="w-full max-w-4xl mb-4">
-            <div className="flex items-center justify-between mb-4">
-              {ONBOARDING_STEPS.map((step, index) => {
-                const Icon = step.icon;
-                const isActive = index === currentStepIndex;
-                const isCompleted = index < currentStepIndex;
-
-                return (
-                  <div key={step.path} className="onboarding-step-fragment">
-                    <div className="flex flex-col items-center relative">
+        <main className="container mx-auto px-4 py-8 md:py-12">
+          <div className="mx-auto max-w-4xl">
+            {/* Progress indicator */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                {ONBOARDING_STEPS.map((step, index) => (
+                  <React.Fragment key={step.path}>
+                    <div
+                      className={`flex flex-col items-center ${
+                        index <= currentStepIndex ? 'text-primary' : 'text-muted-foreground'
+                      }`}
+                    >
                       <div
-                        className={`
-                        w-14 h-14 rounded-full flex items-center justify-center mb-3 transition-all duration-500 transform border-2
-                        ${
-                          isActive
-                            ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white scale-110 shadow-xl shadow-blue-500/30 border-transparent"
-                            : isCompleted
-                              ? "bg-green-500 text-white border-green-500 shadow-lg"
-                              : "bg-white text-slate-400 border-slate-200 shadow-md hover:border-slate-300"
-                        }
-                      `}
-                      >
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <span
-                        className={`text-sm font-semibold text-center px-2 transition-colors duration-300 ${
-                          isActive
-                            ? "text-slate-900"
-                            : isCompleted
-                              ? "text-slate-700"
-                              : "text-slate-500"
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                          index <= currentStepIndex
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
                         }`}
                       >
-                        {step.label}
-                      </span>
-                      {isActive && (
-                        <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 text-xs text-slate-600 text-center whitespace-nowrap bg-white px-3 py-1 rounded-full shadow-sm border">
-                          {step.description}
-                        </div>
-                      )}
+                        <step.icon className="h-5 w-5" />
+                      </div>
+                      <span className="mt-2 text-sm font-medium">{step.label}</span>
                     </div>
                     {index < ONBOARDING_STEPS.length - 1 && (
-                      <div
-                        className={`flex-1 h-0.5 mx-6 transition-all duration-500 rounded-full ${
-                          index < currentStepIndex
-                            ? "bg-green-500"
-                            : "bg-slate-200"
-                        }`}
-                      />
+                      <div className="h-0.5 flex-1 bg-border mx-2" />
                     )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Main Content Card */}
-          <div className="w-full max-w-4xl">
-            <div className="bg-white/80 backdrop-blur-sm border border-white/60 rounded-3xl shadow-2xl overflow-hidden">
-              {/* Progress Bar */}
-              <div className="h-1.5 bg-slate-100">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-700 ease-out rounded-r-full"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-
-              <div className="p-8 sm:p-12">
-                {/* Header */}
-                <div className="text-center mb-10">
-                  <div className="inline-flex items-center px-5 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-600/10 border border-blue-200 text-slate-700 text-sm font-semibold mb-6">
-                    <Sparkles className="w-4 h-4 mr-2 text-blue-500" />
-                    Step {currentStepIndex + 1} of {ONBOARDING_STEPS.length}
-                  </div>
-
-                  <h1 className="text-4xl sm:text-5xl font-bold text-slate-900 mb-4 font-display">
-                    {ONBOARDING_STEPS[currentStepIndex]?.label ||
-                      "Getting Started"}
-                  </h1>
-
-                  <p className="text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed">
-                    Let's personalize your learning journey to help you achieve
-                    your goals
-                  </p>
-                </div>
-
-                {/* Content Area */}
-                <div className="min-h-[400px] flex items-center justify-center">
-                  <div className="w-full animate-fade-in">
-                    <Outlet />
-                  </div>
-                </div>
-
-                {/* Navigation */}
-                <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100">
-                  <Button
-                    variant="outline"
-                    onClick={goToPreviousStep}
-                    disabled={isFirstStep}
-                    className="bg-white border-slate-300 text-slate-700 hover:bg-slate-50 hover:border-slate-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 px-6 py-3"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back
-                  </Button>
-
-                  <div className="flex items-center gap-2">
-                    {ONBOARDING_STEPS.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                          index <= currentStepIndex
-                            ? "bg-slate-800"
-                            : "bg-slate-300"
-                        }`}
-                      />
-                    ))}
-                  </div>
-
-                  <Button
-                    onClick={goToNextStep}
-                    disabled={!canContinue}
-                    className={`
-                      bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700
-                      text-white border-0 shadow-lg transition-all duration-200 transform px-6 py-3
-                      ${
-                        canContinue
-                          ? "hover:scale-105 hover:shadow-xl hover:shadow-blue-500/25"
-                          : "opacity-40 cursor-not-allowed"
-                      }
-                    `}
-                  >
-                    {isLastStep ? "Complete Setup" : "Continue"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
+                  </React.Fragment>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Bottom Decoration */}
-          <div className="mt-8 text-center">
-            <p className="text-slate-500 text-sm">
-              Your personalized learning experience awaits ✨
-            </p>
+            {/* Current step content */}
+            <div className="rounded-lg bg-card p-6 shadow-sm">
+              <Outlet />
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="mt-8 flex items-center justify-between">
+              <Button
+                variant="outline"
+                onClick={goToPreviousStep}
+                disabled={isFirstStep || isLoading}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              
+              <Button
+                onClick={goToNextStep}
+                disabled={!canContinue || isLoading}
+              >
+                {isLastStep ? 'Finish' : 'Next'}
+                {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+            </div>
+
+            {error && (
+              <div className="mt-4 rounded-md bg-destructive/10 p-4 text-destructive">
+                {error}
+              </div>
+            )}
           </div>
         </main>
       </div>

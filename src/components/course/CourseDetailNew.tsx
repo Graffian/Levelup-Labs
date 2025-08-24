@@ -29,7 +29,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-// Import course data and types
+// Import course data
 import { htmlCssMastery } from '@/data/courses/htmlCssMastery';
 import { timeCommitmentConfig } from '@/data/timeCommitment';
 import { playlistsByTimeCommitment } from '@/data/courses/playlists';
@@ -211,17 +211,31 @@ export const CourseDetailNew: React.FC = () => {
   // Get the progress functions for the current time commitment
   const progressFunctionsForCommitment = progressFunctions[timeCommitment];
 
+  // Handle missing course ID
+  useEffect(() => {
+    if (!courseId) {
+      // If no courseId is provided, try to get it from localStorage or use a default
+      const savedCourseId = localStorage.getItem('lastVisitedCourseId') || 'html-css-mastery';
+      setError(`Loading course...`);
+      navigate(`/course/${savedCourseId}`, { replace: true });
+      return;
+    }
+    
+    // Save the current courseId to localStorage for future reference
+    localStorage.setItem('lastVisitedCourseId', courseId);
+  }, [courseId, navigate]);
+
   useEffect(() => {
     const fetchCourseData = async () => {
       try {
-        if (!courseId) {
-          throw new Error('No course ID provided');
-        }
+        if (!courseId) return;
 
+        setLoading(true);
+        
         // Get course data from our mapping
         const courseData = courseDataMap[courseId];
         if (!courseData) {
-          throw new Error('Course not found');
+          throw new Error('Course not found. Redirecting to available courses...');
         }
 
         // Update module URLs based on time commitment
@@ -237,21 +251,87 @@ export const CourseDetailNew: React.FC = () => {
           ...courseData,
           modules: updatedModules
         });
-
-        // TODO: Fetch user's completed modules from the database
-        // This is a placeholder - replace with actual implementation
-        // const completed = await fetchCompletedModules(user.id, courseId);
-        // setCompletedModules(new Set(completed));
         
-        setLoading(false);
+        // Load completed modules from localStorage
+        const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          const completed = new Set<number>();
+          progress.modules.forEach((m: {id: number, completed: boolean}) => {
+            if (m.completed) completed.add(m.id);
+          });
+          setCompletedModules(completed);
+        }
+        
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setError(err instanceof Error ? err.message : 'Failed to load course data');
+        // Redirect to course dashboard if course is not found
+        if (err instanceof Error && err.message.includes('not found')) {
+          setTimeout(() => navigate('/course-dashboard'), 2000);
+        }
+      } finally {
         setLoading(false);
       }
     };
 
     fetchCourseData();
-  }, [courseId, timeCommitment, user?.id]);
+  }, [courseId, timeCommitment, navigate]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6">
+        <Skeleton className="h-12 w-1/3 mb-6" />
+        <div className="grid gap-6">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button 
+          variant="outline" 
+          className="mt-4" 
+          onClick={() => navigate(-1)}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Go Back
+        </Button>
+      </div>
+    );
+  }
+
+  // Show course not found state
+  if (!course) {
+    return (
+      <div className="container mx-auto p-6">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Course Not Found</AlertTitle>
+          <AlertDescription>
+            The requested course could not be found. Please check the URL or return to the courses page.
+          </AlertDescription>
+        </Alert>
+        <Button 
+          variant="outline" 
+          className="mt-4" 
+          onClick={() => navigate('/courses')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back to Courses
+        </Button>
+      </div>
+    );
+  }
 
   const toggleModuleCompletion = async (moduleId: number) => {
     if (!user || !courseId || !course) return;
@@ -322,18 +402,6 @@ export const CourseDetailNew: React.FC = () => {
     }
   };
 
-  if (loading) {
-    return <div>Loading course data...</div>;
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
-
-  if (!course) {
-    return <div>Course not found</div>;
-  }
-
   // Calculate progress percentage
   const progress = course.modules.length > 0 
     ? Math.round((completedModules.size / course.modules.length) * 100) 
@@ -387,53 +455,61 @@ export const CourseDetailNew: React.FC = () => {
       {/* Course Modules */}
       <div className="grid gap-4">
         <h2 className="text-xl font-semibold">Course Modules</h2>
-        {course.modules.map((module) => {
-          const isCompleted = completedModules.has(module.id);
-          
-          return (
-            <Card key={module.id} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">{module.title}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">{module.duration}</span>
-                    <Button
-                      variant={isCompleted ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => toggleModuleCompletion(module.id)}
-                      className="h-8 w-8 p-0 rounded-full"
-                    >
-                      {isCompleted ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground mb-3">{module.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mb-3">
-                  {module.topics.map((topic, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {topic}
-                    </Badge>
-                  ))}
-                </div>
-                
-                {module.playlistUrl && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={() => window.open(module.playlistUrl, '_blank')}
-                  >
-                    <Youtube className="mr-2 h-4 w-4" />
-                    Watch on YouTube
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          );
-        })}
+        {course?.modules?.length > 0 ? (
+          <div className="space-y-4">
+            {course.modules.map((module) => {
+              const isCompleted = completedModules.has(module.id);
+              
+              return (
+                <Card key={module.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-2">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="text-lg">{module.title}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">{module.duration}</span>
+                        <Button
+                          variant={isCompleted ? "outline" : "default"}
+                          size="sm"
+                          onClick={() => toggleModuleCompletion(module.id)}
+                          className="h-8 w-8 p-0 rounded-full"
+                        >
+                          {isCompleted ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-3">{module.description}</p>
+                    
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {module.topics?.map((topic, index) => (
+                        <Badge key={index} variant="outline" className="text-xs">
+                          {topic}
+                        </Badge>
+                      ))}
+                    </div>
+                    
+                    {module.playlistUrl && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-2"
+                        onClick={() => window.open(module.playlistUrl, '_blank')}
+                      >
+                        <Youtube className="mr-2 h-4 w-4" />
+                        Watch on YouTube
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">No modules available for this course.</p>
+          </div>
+        )}
       </div>
     </div>
   );
