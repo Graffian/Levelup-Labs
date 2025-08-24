@@ -42,7 +42,7 @@ import type {
 } from '@/types/course';
 
 // Import hooks
-import { useOnboardingData } from '@/hooks/useOnboardingData';
+import { useSimpleOnboardingData } from '@/hooks/useSimpleOnboardingData';
 
 // Import progress components from their actual locations
 import { 
