@@ -70,13 +70,11 @@ import {
 const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'getCompleted'>> = {
   minimal: {
     check: async (params: any) => {
-      // MinimalProgressCheck expects (clerkUserId)
       const result = await MinimalProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // MinimalProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await MinimalProgressDelete(
+      return await MinimalProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -84,8 +82,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // MinimalProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await MinimalProgressInsert(
+      return await MinimalProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -98,13 +95,11 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
   },
   moderate: {
     check: async (params: any) => {
-      // ModerateProgressCheck expects (clerkUserId)
       const result = await ModerateProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // ModerateProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await ModerateProgressDelete(
+      return await ModerateProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -112,8 +107,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // ModerateProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await ModerateProgressInsert(
+      return await ModerateProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -126,13 +120,11 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
   },
   significant: {
     check: async (params: any) => {
-      // SignificantProgressCheck expects (clerkUserId)
       const result = await SignificantProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // SignificantProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await SignificantProgressDelete(
+      return await SignificantProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -140,8 +132,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // SignificantProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await SignificantProgressInsert(
+      return await SignificantProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -154,13 +145,11 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
   },
   intensive: {
     check: async (params: any) => {
-      // IntensiveProgressCheck expects (clerkUserId)
       const result = await IntensiveProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // IntensiveProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await IntensiveProgressDelete(
+      return await IntensiveProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -168,8 +157,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // IntensiveProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await IntensiveProgressInsert(
+      return await IntensiveProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -516,12 +504,16 @@ export const CourseDetailNew: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">{module.duration}</span>
                         <Button
-                          variant={isCompleted ? "outline" : "default"}
+                          variant={isCompleted ? "default" : "outline"}
                           size="sm"
                           onClick={() => toggleModuleCompletion(module.id)}
-                          className="h-8 w-8 p-0 rounded-full"
+                          className={`h-8 w-8 p-0 rounded-full transition-colors ${
+                            isCompleted
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'border-2 border-gray-300 hover:border-green-500'
+                          }`}
                         >
-                          {isCompleted ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                          <Check className={`h-4 w-4 ${isCompleted ? 'text-white' : 'text-gray-400'}`} />
                         </Button>
                       </div>
                     </div>
