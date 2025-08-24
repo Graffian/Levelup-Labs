@@ -4,7 +4,7 @@ async function MinimalProgressDelete(moduleId: number, userId: string, currentCo
         const { error } = await supabase.from("minimal_user_progress")
                                        .delete()
                                        .eq("module_id", moduleId)
-                                       .eq("user_id", userId)
+                                       .eq("clerk_user_id", userId)
                                        .eq("current_course", currentCourse)
                                        .eq("current_module", currentModule)
 
@@ -27,7 +27,7 @@ async function MinimalProgressCheck(userId: string): Promise<any[]> {
     try {
         const { data, error } = await supabase.from("minimal_user_progress")
                                              .select("*")
-                                             .eq("user_id", userId)
+                                             .eq("clerk_user_id", userId)
 
         if (error) {
             console.error("Fetch failed:", error.message)
@@ -56,7 +56,7 @@ async function MinimalProgressInsert(
         const { data, error } = await supabase.from("minimal_user_progress")
                                              .insert([
                                                 {
-                                                    user_id: userId,
+                                                    clerk_user_id: userId,
                                                     learning_goal: learningGoal,
                                                     current_course: currentCourse,
                                                     current_module: currentModule,
