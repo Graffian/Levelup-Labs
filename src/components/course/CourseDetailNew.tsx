@@ -177,7 +177,8 @@ const courseDataMap: Record<string, CourseData> = {
 };
 
 export const CourseDetailNew: React.FC = () => {
-  const { courseId } = useParams<{ courseId: string }>();
+  const { courseSlug } = useParams<{ courseSlug: string }>();
+  const courseId = courseSlug; // Use courseSlug as courseId for consistency
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
