@@ -68,11 +68,11 @@ export const useSimpleOnboardingData = (userId: string | null) => {
       } catch (err) {
         console.error('Unexpected error fetching onboarding data:', err);
         setError(`Unexpected error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-        // Set default values on error
+        // Set values from URL parameters or defaults on error
         setData({
-          learning_goal: 'General Learning',
-          time_commitment: 'moderate', 
-          experience_level: 'beginner'
+          learning_goal: goalFromUrl || 'General Learning',
+          time_commitment: timeCommitmentFromUrl || 'moderate',
+          experience_level: experienceFromUrl || 'beginner'
         });
       } finally {
         setLoading(false);
