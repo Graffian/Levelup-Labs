@@ -281,24 +281,35 @@ export const CourseDetailNew: React.FC = () => {
   // Load user's progress from database when userId is available
   useEffect(() => {
     const loadUserProgress = async () => {
-      if (!userId || !courseId) return;
+      if (!userId || !courseId) {
+        console.log('Not loading progress: missing userId or courseId', { userId, courseId });
+        return;
+      }
+
+      console.log('Loading progress for:', { userId, courseId, courseName: course?.title });
 
       try {
         const userProgress = await progressFunctionsForCommitment.check({ userId });
+        console.log('Raw progress data from database:', userProgress);
+
         const completed = new Set<number>();
 
         userProgress.forEach((progress: any) => {
+          console.log('Processing progress:', progress);
           if (progress.is_completed && progress.current_course === course?.title) {
+            console.log('Adding completed module:', progress.module_id);
             completed.add(progress.module_id);
           }
         });
 
+        console.log('Final completed modules:', Array.from(completed));
         setCompletedModules(completed);
       } catch (error) {
         console.error('Error loading user progress:', error);
         // Fallback to localStorage if database fails
         const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
         if (savedProgress) {
+          console.log('Falling back to localStorage progress');
           const progress = JSON.parse(savedProgress);
           const completed = new Set<number>();
           progress.modules?.forEach((m: {id: number, completed: boolean}) => {
