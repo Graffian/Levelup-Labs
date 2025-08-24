@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -43,7 +42,7 @@ import type {
 } from '@/types/course';
 
 // Import hooks
-import { useOnboardingData } from '@/hooks/useOnboardingData';
+import { useSimpleOnboardingData } from '@/hooks/useSimpleOnboardingData';
 
 // Import progress components from their actual locations
 import { 
@@ -71,13 +70,11 @@ import {
 const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'getCompleted'>> = {
   minimal: {
     check: async (params: any) => {
-      // MinimalProgressCheck expects (clerkUserId)
       const result = await MinimalProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // MinimalProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await MinimalProgressDelete(
+      return await MinimalProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -85,8 +82,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // MinimalProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await MinimalProgressInsert(
+      return await MinimalProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -99,13 +95,11 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
   },
   moderate: {
     check: async (params: any) => {
-      // ModerateProgressCheck expects (clerkUserId)
       const result = await ModerateProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // ModerateProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await ModerateProgressDelete(
+      return await ModerateProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -113,8 +107,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // ModerateProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await ModerateProgressInsert(
+      return await ModerateProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -127,13 +120,11 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
   },
   significant: {
     check: async (params: any) => {
-      // SignificantProgressCheck expects (clerkUserId)
       const result = await SignificantProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // SignificantProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await SignificantProgressDelete(
+      return await SignificantProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -141,8 +132,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // SignificantProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await SignificantProgressInsert(
+      return await SignificantProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -155,13 +145,11 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
   },
   intensive: {
     check: async (params: any) => {
-      // IntensiveProgressCheck expects (clerkUserId)
       const result = await IntensiveProgressCheck(params.userId);
       return result || [];
     },
     delete: async (params: any) => {
-      // IntensiveProgressDelete expects (moduleId, clerkUserId, currentCourse, currentModule)
-      await IntensiveProgressDelete(
+      return await IntensiveProgressDelete(
         params.moduleId,
         params.userId,
         params.currentCourse,
@@ -169,8 +157,7 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
       );
     },
     insert: async (params: any) => {
-      // IntensiveProgressInsert expects (clerkUserId, learningGoal, currentCourse, currentModule, totalModulesInCourse, isCompleted, moduleId)
-      await IntensiveProgressInsert(
+      return await IntensiveProgressInsert(
         params.userId,
         params.learningGoal,
         params.currentCourse,
@@ -190,12 +177,25 @@ const courseDataMap: Record<string, CourseData> = {
 };
 
 export const CourseDetailNew: React.FC = () => {
-  const { courseId } = useParams<{ courseId: string }>();
+  const { courseSlug } = useParams<{ courseSlug: string }>();
+  const courseId = courseSlug; // Use courseSlug as courseId for consistency
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { user } = useUser();
-  const { data: onboardingData } = useOnboardingData();
+  // Simple user identification system (no Clerk)
+  const [userId, setUserId] = useState<string>('');
+
+  // Initialize user ID on component mount
+  useEffect(() => {
+    let storedUserId = localStorage.getItem('simple_user_id');
+    if (!storedUserId) {
+      // Generate a simple unique ID for this user
+      storedUserId = 'user_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+      localStorage.setItem('simple_user_id', storedUserId);
+    }
+    setUserId(storedUserId);
+  }, []);
+  const { data: onboardingData } = useSimpleOnboardingData(userId);
   
   // Get time commitment from URL or default to 'moderate'
   const timeCommitment = (new URLSearchParams(location.search).get('timeCommitment') || 'moderate') as TimeCommitmentLevel;
@@ -209,6 +209,7 @@ export const CourseDetailNew: React.FC = () => {
   const commitmentConfig = timeCommitmentConfig[timeCommitment];
   
   // Get the progress functions for the current time commitment
+  // Get the progress functions for the current time commitment
   const progressFunctionsForCommitment = progressFunctions[timeCommitment];
 
   // Handle missing course ID
@@ -216,11 +217,11 @@ export const CourseDetailNew: React.FC = () => {
     if (!courseId) {
       // If no courseId is provided, try to get it from localStorage or use a default
       const savedCourseId = localStorage.getItem('lastVisitedCourseId') || 'html-css-mastery';
-      setError(`Loading course...`);
+      setLoading(true); // Set loading state instead of error
       navigate(`/course/${savedCourseId}`, { replace: true });
       return;
     }
-    
+
     // Save the current courseId to localStorage for future reference
     localStorage.setItem('lastVisitedCourseId', courseId);
   }, [courseId, navigate]);
@@ -231,7 +232,7 @@ export const CourseDetailNew: React.FC = () => {
         if (!courseId) return;
 
         setLoading(true);
-        
+
         // Get course data from our mapping
         const courseData = courseDataMap[courseId];
         if (!courseData) {
@@ -252,12 +253,12 @@ export const CourseDetailNew: React.FC = () => {
           modules: updatedModules
         });
         
-        // Load completed modules from localStorage
+        // Load completed modules from localStorage as fallback
         const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
           const completed = new Set<number>();
-          progress.modules.forEach((m: {id: number, completed: boolean}) => {
+          progress.modules?.forEach((m: {id: number, completed: boolean}) => {
             if (m.completed) completed.add(m.id);
           });
           setCompletedModules(completed);
@@ -276,6 +277,42 @@ export const CourseDetailNew: React.FC = () => {
 
     fetchCourseData();
   }, [courseId, timeCommitment, navigate]);
+
+  // Load user's progress from database when userId is available
+  useEffect(() => {
+    const loadUserProgress = async () => {
+      if (!userId || !courseId) return;
+
+      try {
+        const userProgress = await progressFunctionsForCommitment.check({ userId });
+        const completed = new Set<number>();
+
+        userProgress.forEach((progress: any) => {
+          if (progress.is_completed && progress.current_course === course?.title) {
+            completed.add(progress.module_id);
+          }
+        });
+
+        setCompletedModules(completed);
+      } catch (error) {
+        console.error('Error loading user progress:', error);
+        // Fallback to localStorage if database fails
+        const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
+        if (savedProgress) {
+          const progress = JSON.parse(savedProgress);
+          const completed = new Set<number>();
+          progress.modules?.forEach((m: {id: number, completed: boolean}) => {
+            if (m.completed) completed.add(m.id);
+          });
+          setCompletedModules(completed);
+        }
+      }
+    };
+
+    if (userId && course) {
+      loadUserProgress();
+    }
+  }, [userId, course, progressFunctionsForCommitment]);
 
   // Show loading state
   if (loading) {
@@ -334,71 +371,74 @@ export const CourseDetailNew: React.FC = () => {
   }
 
   const toggleModuleCompletion = async (moduleId: number) => {
-    if (!user || !courseId || !course) return;
+    if (!userId || !courseId || !course) return;
 
     try {
       const isCurrentlyCompleted = completedModules.has(moduleId);
       const newCompletedModules = new Set(completedModules);
       const currentModule = course.modules.find(m => m.id === moduleId);
-      
+
       // Prepare common parameters
       const currentModuleTitle = currentModule?.title || `Module ${moduleId}`;
       const courseTitle = course.title || courseId;
-      const learningGoal = onboardingData?.learning_goal || '';
-      
+
+      // Get learning goal from URL parameters first, then fallback to onboarding data
+      const urlParams = new URLSearchParams(location.search);
+      const learningGoal = urlParams.get('goal') || onboardingData?.learning_goal || 'General Learning';
+
       if (isCurrentlyCompleted) {
         // Delete the progress record for this module
-        await progressFunctionsForCommitment.delete({
+        const deleteResult = await progressFunctionsForCommitment.delete({
           moduleId,
-          userId: user.id,
+          userId,
           currentCourse: courseTitle,
           currentModule: currentModuleTitle
         });
-        newCompletedModules.delete(moduleId);
+
+        if (deleteResult.success) {
+          newCompletedModules.delete(moduleId);
+          console.log(`Module ${moduleId} unmarked as completed`);
+        } else {
+          throw new Error(deleteResult.error || 'Failed to delete progress');
+        }
       } else {
-        try {
-          // First check if we have an existing progress record
-          const existingProgress = await progressFunctionsForCommitment.check({ userId: user.id });
-          
-          if (existingProgress && existingProgress.length > 0) {
-            // Update existing record
-            await progressFunctionsForCommitment.insert({
-              userId: user.id,
-              learningGoal,
-              currentCourse: courseTitle,
-              currentModule: currentModuleTitle,
-              totalModulesInCourse: course.totalModules,
-              isCompleted: true,
-              moduleId
-            });
-          } else {
-            // Create new record
-            await progressFunctionsForCommitment.insert({
-              userId: user.id,
-              learningGoal,
-              currentCourse: courseTitle,
-              currentModule: currentModuleTitle,
-              totalModulesInCourse: course.totalModules,
-              isCompleted: true,
-              moduleId
-            });
-          }
+        // Insert new progress record
+        const insertResult = await progressFunctionsForCommitment.insert({
+          userId,
+          learningGoal,
+          currentCourse: courseTitle,
+          currentModule: currentModuleTitle,
+          totalModulesInCourse: course.modules.length,
+          isCompleted: true,
+          moduleId
+        });
+
+        if (insertResult.success) {
           newCompletedModules.add(moduleId);
-        } catch (error) {
-          console.error('Error updating progress:', error);
-          throw error; // Re-throw the error to be caught by the outer catch
+          console.log(`Module ${moduleId} marked as completed`);
+        } else {
+          throw new Error(insertResult.error || 'Failed to insert progress');
         }
       }
-      
+
       // Update the UI state
       setCompletedModules(newCompletedModules);
-      
+
+      // Save progress to localStorage as backup
+      const progressData = {
+        courseId,
+        modules: Array.from(newCompletedModules).map(id => ({ id, completed: true }))
+      };
+      localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
+
     } catch (error) {
       console.error('Error in toggleModuleCompletion:', error);
-      // Show error to user (using console.error since toast is a stub)
-      console.error('Failed to update module progress. Please try again.');
-      // Revert the UI state on error
-      setCompletedModules(new Set(completedModules));
+      toast({
+        title: 'Error',
+        description: 'Failed to update module progress. Please try again.',
+        variant: 'destructive'
+      });
+      // Don't revert UI state on error - let user try again
     }
   };
 
@@ -468,12 +508,16 @@ export const CourseDetailNew: React.FC = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-sm text-muted-foreground">{module.duration}</span>
                         <Button
-                          variant={isCompleted ? "outline" : "default"}
+                          variant={isCompleted ? "default" : "outline"}
                           size="sm"
                           onClick={() => toggleModuleCompletion(module.id)}
-                          className="h-8 w-8 p-0 rounded-full"
+                          className={`h-8 w-8 p-0 rounded-full transition-colors ${
+                            isCompleted
+                              ? 'bg-green-600 hover:bg-green-700 text-white'
+                              : 'border-2 border-gray-300 hover:border-green-500'
+                          }`}
                         >
-                          {isCompleted ? <Check className="h-4 w-4" /> : <Check className="h-4 w-4" />}
+                          <Check className={`h-4 w-4 ${isCompleted ? 'text-white' : 'text-gray-400'}`} />
                         </Button>
                       </div>
                     </div>
