@@ -231,10 +231,18 @@ export const CourseDetailNew: React.FC = () => {
         if (!courseId) return;
 
         setLoading(true);
-        
+
+        // Debug logging
+        console.log('CourseId:', courseId);
+        console.log('Available courses:', Object.keys(courseDataMap));
+        console.log('htmlCssMastery data:', htmlCssMastery);
+
         // Get course data from our mapping
         const courseData = courseDataMap[courseId];
+        console.log('Found courseData:', courseData);
+
         if (!courseData) {
+          console.error('Course not found for courseId:', courseId);
           throw new Error('Course not found. Redirecting to available courses...');
         }
 
