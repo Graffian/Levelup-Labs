@@ -216,11 +216,11 @@ export const CourseDetailNew: React.FC = () => {
     if (!courseId) {
       // If no courseId is provided, try to get it from localStorage or use a default
       const savedCourseId = localStorage.getItem('lastVisitedCourseId') || 'html-css-mastery';
-      setError(`Loading course...`);
+      setLoading(true); // Set loading state instead of error
       navigate(`/course/${savedCourseId}`, { replace: true });
       return;
     }
-    
+
     // Save the current courseId to localStorage for future reference
     localStorage.setItem('lastVisitedCourseId', courseId);
   }, [courseId, navigate]);
