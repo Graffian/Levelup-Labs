@@ -42,16 +42,26 @@ export const useSimpleOnboardingData = (userId: string | null) => {
         if (fetchError) {
           console.error('Error fetching onboarding data:', fetchError);
           setError(`Failed to fetch onboarding data: ${fetchError.message}`);
-          setData(null);
+          // Use URL parameters as fallback on error
+          setData({
+            learning_goal: goalFromUrl || 'General Learning',
+            time_commitment: timeCommitmentFromUrl || 'moderate',
+            experience_level: experienceFromUrl || 'beginner'
+          });
         } else if (onboardingData) {
-          setData(onboardingData);
+          // Prioritize URL parameters over database data
+          setData({
+            learning_goal: goalFromUrl || onboardingData.learning_goal || 'General Learning',
+            time_commitment: timeCommitmentFromUrl || onboardingData.time_commitment || 'moderate',
+            experience_level: experienceFromUrl || onboardingData.experience_level || 'beginner'
+          });
           setError(null);
         } else {
-          // No onboarding data found, set default values
+          // No onboarding data found, use URL parameters or defaults
           setData({
-            learning_goal: 'General Learning',
-            time_commitment: 'moderate',
-            experience_level: 'beginner'
+            learning_goal: goalFromUrl || 'General Learning',
+            time_commitment: timeCommitmentFromUrl || 'moderate',
+            experience_level: experienceFromUrl || 'beginner'
           });
           setError(null);
         }
