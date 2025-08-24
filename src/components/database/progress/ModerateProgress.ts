@@ -25,7 +25,6 @@ async function ModerateProgressDelete(moduleId: number, userId: string, currentC
 
 async function ModerateProgressCheck(userId: string): Promise<any[]> {
     try {
-        console.log("ModerateProgressCheck: Querying for userId:", userId);
         const { data, error } = await supabase.from("moderate_user_progress")
                                              .select("*")
                                              .eq("clerk_user_id", userId)
@@ -35,7 +34,6 @@ async function ModerateProgressCheck(userId: string): Promise<any[]> {
             return []
         }
 
-        console.log("ModerateProgressCheck: Found data:", data);
         return data || []
     } catch (error) {
         console.error("Check error:", error)
