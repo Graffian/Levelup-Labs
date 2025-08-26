@@ -122,7 +122,44 @@ export const htmlCssMastery = {
       duration: '1h 45m',
       topics: ['Flex Container', 'Flex Items', 'Alignment', 'Responsive Design'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf9RlGiXNUsI8G6sHtJDdDKQ',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'flex-3-1',
+          title: 'Introduction to Flexbox',
+          duration: '15m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-2',
+          title: 'Flex Container Properties',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-3',
+          title: 'Flex Item Properties',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-4',
+          title: 'Flex Alignment and Justification',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-5',
+          title: 'Responsive Flexbox Layouts',
+          duration: '23m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        }
+      ]
     },
     {
       id: 4,
