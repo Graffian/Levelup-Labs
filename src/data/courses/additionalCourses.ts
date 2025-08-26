@@ -269,7 +269,44 @@ export const designPrinciples = {
       duration: '2h 0m',
       topics: ['Balance', 'Contrast', 'Hierarchy', 'Alignment'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf_ZNmuQSXdS197Oyr1L9sPB',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'design-1-1',
+          title: 'Introduction to Design Principles',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-2',
+          title: 'Balance and Symmetry',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-3',
+          title: 'Contrast and Emphasis',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-4',
+          title: 'Visual Hierarchy',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-5',
+          title: 'Alignment and Proximity',
+          duration: '15m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        }
+      ]
     },
     {
       id: 2,
@@ -278,7 +315,44 @@ export const designPrinciples = {
       duration: '1h 45m',
       topics: ['Color Wheel', 'Color Harmony', 'Psychology of Color', 'Color Systems'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf8JIgLcu3sHigvQjTw_aC9C',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'color-2-1',
+          title: 'The Color Wheel Basics',
+          duration: '16m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-2',
+          title: 'Primary, Secondary & Tertiary Colors',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-3',
+          title: 'Color Harmony and Schemes',
+          duration: '24m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-4',
+          title: 'Psychology of Color',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-5',
+          title: 'Color Systems (RGB, CMYK, HSL)',
+          duration: '23m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        }
+      ]
     },
     {
       id: 3,
@@ -287,7 +361,44 @@ export const designPrinciples = {
       duration: '1h 30m',
       topics: ['Font Types', 'Hierarchy', 'Readability', 'Font Pairing'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf9RlGiXNUsI8G6sHtJDdDKQ',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'typo-3-1',
+          title: 'Introduction to Typography',
+          duration: '14m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-2',
+          title: 'Serif vs Sans-serif Fonts',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-3',
+          title: 'Typography Hierarchy',
+          duration: '21m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-4',
+          title: 'Readability and Legibility',
+          duration: '19m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-5',
+          title: 'Font Pairing Techniques',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        }
+      ]
     },
     {
       id: 4,
@@ -336,7 +447,44 @@ export const pythonDataScience = {
       duration: '2h 30m',
       topics: ['Syntax', 'Data Types', 'Control Structures', 'Functions'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf_ZNmuQSXdS197Oyr1L9sPB',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'python-1-1',
+          title: 'Python Installation and Setup',
+          duration: '12m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-2',
+          title: 'Python Syntax and Variables',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-3',
+          title: 'Data Types and Operators',
+          duration: '30m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-4',
+          title: 'Control Structures (if/else, loops)',
+          duration: '28m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-5',
+          title: 'Functions and Modules',
+          duration: '35m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        }
+      ]
     },
     {
       id: 2,
@@ -354,7 +502,51 @@ export const pythonDataScience = {
       duration: '3h 0m',
       topics: ['DataFrames', 'Data Cleaning', 'Merging', 'Grouping'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf9RlGiXNUsI8G6sHtJDdDKQ',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'pandas-3-1',
+          title: 'Introduction to Pandas',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-2',
+          title: 'Creating and Loading DataFrames',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-3',
+          title: 'Data Selection and Filtering',
+          duration: '30m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-4',
+          title: 'Data Cleaning Techniques',
+          duration: '35m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-5',
+          title: 'Merging and Joining DataFrames',
+          duration: '28m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-6',
+          title: 'Grouping and Aggregation',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        }
+      ]
     },
     {
       id: 4,

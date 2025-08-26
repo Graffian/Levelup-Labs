@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,12 +10,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  AlertCircle, 
-  Clock, 
-  BookOpen, 
-  Check, 
-  Youtube, 
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+  AlertCircle,
+  Clock,
+  BookOpen,
+  Check,
+  Youtube,
   ArrowLeft,
   Users,
   Award,
@@ -25,7 +26,9 @@ import {
   Palette,
   Brain,
   PlayCircle,
-  ExternalLink
+  ExternalLink,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 // Import course data
@@ -231,6 +234,8 @@ export const CourseDetailNew: React.FC = () => {
   
   const [course, setCourse] = useState<CourseData | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set());
+  const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -282,15 +287,24 @@ export const CourseDetailNew: React.FC = () => {
           modules: updatedModules
         });
         
-        // Load completed modules from localStorage as fallback
+        // Load completed modules and videos from localStorage as fallback
         const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
+
+          // Load completed modules
           const completed = new Set<number>();
           progress.modules?.forEach((m: {id: number, completed: boolean}) => {
             if (m.completed) completed.add(m.id);
           });
           setCompletedModules(completed);
+
+          // Load completed videos
+          const completedVids = new Set<string>();
+          progress.videos?.forEach((v: {id: string, completed: boolean}) => {
+            if (v.completed) completedVids.add(v.id);
+          });
+          setCompletedVideos(completedVids);
         }
         
       } catch (err) {
@@ -342,6 +356,46 @@ export const CourseDetailNew: React.FC = () => {
       loadUserProgress();
     }
   }, [userId, course, progressFunctionsForCommitment]);
+
+  // Calculate progress percentage based on individual video completion
+  const progress = useMemo(() => {
+    if (!course || course.modules.length === 0) return 0;
+
+    let totalVideos = 0;
+    let completedVideoCount = 0;
+    let totalModulesWithoutVideos = 0;
+    let completedModulesWithoutVideos = 0;
+
+    course.modules.forEach(module => {
+      if (module.videos && module.videos.length > 0) {
+        totalVideos += module.videos.length;
+        const moduleCompletedVideos = module.videos.filter(video =>
+          completedVideos.has(video.id)
+        ).length;
+        completedVideoCount += moduleCompletedVideos;
+      } else {
+        totalModulesWithoutVideos++;
+        if (completedModules.has(module.id)) {
+          completedModulesWithoutVideos++;
+        }
+      }
+    });
+
+    // If we have videos, calculate based on video completion
+    if (totalVideos > 0) {
+      const videoProgress = totalVideos > 0 ? (completedVideoCount / totalVideos) : 0;
+      const moduleProgress = totalModulesWithoutVideos > 0 ? (completedModulesWithoutVideos / totalModulesWithoutVideos) : 0;
+
+      // Weighted average: give more weight to videos if most modules have videos
+      const videoWeight = totalVideos / (totalVideos + totalModulesWithoutVideos);
+      const moduleWeight = 1 - videoWeight;
+
+      return Math.round((videoProgress * videoWeight + moduleProgress * moduleWeight) * 100);
+    }
+
+    // Fallback to module-based calculation if no videos
+    return Math.round((completedModules.size / course.modules.length) * 100);
+  }, [course, completedModules, completedVideos]);
 
   // Show loading state
   if (loading) {
@@ -398,6 +452,75 @@ export const CourseDetailNew: React.FC = () => {
       </div>
     );
   }
+
+  const toggleModuleExpansion = (moduleId: number) => {
+    setExpandedModules(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(moduleId)) {
+        newExpanded.delete(moduleId);
+      } else {
+        newExpanded.add(moduleId);
+      }
+      return newExpanded;
+    });
+  };
+
+  const toggleVideoCompletion = (videoId: string, moduleId: number) => {
+    setCompletedVideos(prev => {
+      const newCompleted = new Set(prev);
+      if (newCompleted.has(videoId)) {
+        newCompleted.delete(videoId);
+      } else {
+        newCompleted.add(videoId);
+      }
+
+      // Update module completion based on video completion
+      if (course) {
+        const module = course.modules.find(m => m.id === moduleId);
+        if (module && module.videos) {
+          const completedCount = module.videos.filter(video =>
+            newCompleted.has(video.id) || video.id === videoId
+          ).length;
+          const isModuleComplete = completedCount === module.videos.length;
+
+          setCompletedModules(prevModules => {
+            const newModules = new Set(prevModules);
+            if (isModuleComplete) {
+              newModules.add(moduleId);
+            } else {
+              newModules.delete(moduleId);
+            }
+
+            // Save progress to localStorage immediately
+            const progressData = {
+              courseId,
+              modules: Array.from(newModules).map(id => ({ id, completed: true })),
+              videos: Array.from(newCompleted).map(id => ({ id, completed: true }))
+            };
+            localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
+
+            return newModules;
+          });
+        }
+      }
+
+      return newCompleted;
+    });
+  };
+
+  const getModuleProgress = (moduleId: number) => {
+    if (!course) return 0;
+    const module = course.modules.find(m => m.id === moduleId);
+    if (!module || !module.videos || module.videos.length === 0) {
+      return completedModules.has(moduleId) ? 100 : 0;
+    }
+
+    const completedCount = module.videos.filter(video =>
+      completedVideos.has(video.id)
+    ).length;
+
+    return Math.round((completedCount / module.videos.length) * 100);
+  };
 
   const toggleModuleCompletion = async (moduleId: number) => {
     if (!userId || !courseId || !course) return;
@@ -456,7 +579,8 @@ export const CourseDetailNew: React.FC = () => {
       // Save progress to localStorage as backup
       const progressData = {
         courseId,
-        modules: Array.from(newCompletedModules).map(id => ({ id, completed: true }))
+        modules: Array.from(newCompletedModules).map(id => ({ id, completed: true })),
+        videos: Array.from(completedVideos).map(id => ({ id, completed: true }))
       };
       localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
 
@@ -470,11 +594,6 @@ export const CourseDetailNew: React.FC = () => {
       // Don't revert UI state on error - let user try again
     }
   };
-
-  // Calculate progress percentage
-  const progress = course.modules.length > 0 
-    ? Math.round((completedModules.size / course.modules.length) * 100) 
-    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
@@ -592,6 +711,8 @@ export const CourseDetailNew: React.FC = () => {
           <div className="grid gap-6 max-w-4xl mx-auto">
             {course.modules.map((module, index) => {
               const isCompleted = completedModules.has(module.id);
+              const isExpanded = expandedModules.has(module.id);
+              const moduleProgress = getModuleProgress(module.id);
 
               return (
                 <Card
@@ -612,10 +733,41 @@ export const CourseDetailNew: React.FC = () => {
                   <CardHeader className="pb-4 pl-20">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                       <div className="flex-1">
-                        <CardTitle className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
-                          {module.title}
-                        </CardTitle>
-                        <p className="text-slate-600 leading-relaxed">{module.description}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                            {module.title}
+                          </CardTitle>
+                          {module.videos && module.videos.length > 0 && (
+                            <Collapsible>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleModuleExpansion(module.id)}
+                                  className="p-1 h-6 w-6 rounded-full hover:bg-slate-200"
+                                >
+                                  {isExpanded ? (
+                                    <ChevronDown className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronRight className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </CollapsibleTrigger>
+                            </Collapsible>
+                          )}
+                        </div>
+                        <p className="text-slate-600 leading-relaxed mb-2">{module.description}</p>
+
+                        {/* Module Progress Bar */}
+                        {module.videos && module.videos.length > 0 && (
+                          <div className="mb-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-slate-500">Progress:</span>
+                              <span className="text-xs font-semibold text-slate-700">{moduleProgress}%</span>
+                            </div>
+                            <Progress value={moduleProgress} className="h-2 bg-slate-200" />
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-3">
@@ -656,6 +808,67 @@ export const CourseDetailNew: React.FC = () => {
                       ))}
                     </div>
 
+                    {/* Video List Dropdown */}
+                    {module.videos && module.videos.length > 0 && (
+                      <Collapsible open={isExpanded} onOpenChange={() => toggleModuleExpansion(module.id)}>
+                        <CollapsibleContent className="space-y-2 mb-4">
+                          <div className="bg-slate-50 rounded-lg p-4 border">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                              <PlayCircle className="h-4 w-4" />
+                              Videos in this module ({module.videos.length})
+                            </h4>
+                            <div className="space-y-2">
+                              {module.videos.map((video, videoIndex) => {
+                                const isVideoCompleted = completedVideos.has(video.id);
+                                return (
+                                  <div
+                                    key={video.id}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
+                                      isVideoCompleted
+                                        ? 'bg-green-50 border-green-200'
+                                        : 'bg-white border-slate-200 hover:border-slate-300'
+                                    }`}
+                                  >
+                                    <Checkbox
+                                      checked={isVideoCompleted}
+                                      onCheckedChange={() => toggleVideoCompletion(video.id, module.id)}
+                                      className="h-4 w-4"
+                                    />
+
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-medium ${
+                                          isVideoCompleted ? 'text-green-700 line-through' : 'text-slate-900'
+                                        }`}>
+                                          {videoIndex + 1}. {video.title}
+                                        </span>
+                                        {isVideoCompleted && (
+                                          <Check className="h-4 w-4 text-green-500" />
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <Clock className="h-3 w-3 text-slate-400" />
+                                        <span className="text-xs text-slate-500">{video.duration}</span>
+                                      </div>
+                                    </div>
+
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => window.open(video.videoUrl, '_blank')}
+                                      className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50"
+                                    >
+                                      <Play className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+
                     {/* Action Buttons */}
                     <div className="flex flex-wrap gap-3">
                       {module.playlistUrl && (
@@ -666,18 +879,30 @@ export const CourseDetailNew: React.FC = () => {
                           onClick={() => window.open(module.playlistUrl, '_blank')}
                         >
                           <Youtube className="mr-2 h-4 w-4" />
-                          Watch on YouTube
+                          Watch Playlist
                         </Button>
                       )}
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-                      >
-                        <PlayCircle className="mr-2 h-4 w-4" />
-                        Start Module
-                      </Button>
+                      {module.videos && module.videos.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleModuleExpansion(module.id)}
+                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronDown className="mr-2 h-4 w-4" />
+                              Hide Videos
+                            </>
+                          ) : (
+                            <>
+                              <ChevronRight className="mr-2 h-4 w-4" />
+                              Show Videos ({module.videos.length})
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
 

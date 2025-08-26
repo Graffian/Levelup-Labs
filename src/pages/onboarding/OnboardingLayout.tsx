@@ -149,7 +149,7 @@ const OnboardingLayout = () => {
       // On the last step, save the data before proceeding
       const success = await handleSaveOnboardingData();
       if (success) {
-        navigate(`/learning-path/${onboardingData.learning_goal}/${onboardingData.time_commitment}/${onboardingData.experience_level}`);
+        navigate(`/personalizing/${onboardingData.learning_goal}/${onboardingData.time_commitment}/${onboardingData.experience_level}`);
       }
     } else {
       const nextStep = ONBOARDING_STEPS[currentStepIndex + 1];

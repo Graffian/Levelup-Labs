@@ -11,6 +11,7 @@ import OnboardingLayout from "./pages/onboarding/OnboardingLayout";
 import OnboardingGoals from "./pages/onboarding/OnboardingGoals";
 import OnboardingTime from "./pages/onboarding/OnboardingTime";
 import OnboardingExperience from "./pages/onboarding/OnboardingExperience";
+import PersonalizingLoader from "./pages/onboarding/PersonalizingLoader";
 import CourseDashboard from "./pages/course/CourseDashboard";
 import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
@@ -99,6 +100,13 @@ const App = () => {
                 <Route path="time" element={<OnboardingTime />} />
                 <Route path="experience" element={<OnboardingExperience />} />
               </Route>
+
+              {/* Personalizing Loader */}
+              <Route path="/personalizing/:goalId/:timeId/:experienceId" element={
+                <ErrorBoundary>
+                  <PersonalizingLoader />
+                </ErrorBoundary>
+              } />
 
               {/* Learning Path Page */}
               <Route path="/learning-path/:goalId/:timeId/:experienceId" element={

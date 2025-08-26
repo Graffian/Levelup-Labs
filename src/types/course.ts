@@ -1,5 +1,13 @@
 import { LucideIcon } from "lucide-react";
 
+export interface Video {
+  id: string;
+  title: string;
+  duration: string;
+  videoUrl: string;
+  completed: boolean;
+}
+
 export interface Module {
   id: number;
   title: string;
@@ -8,6 +16,7 @@ export interface Module {
   topics: string[];
   playlistUrl: string;
   completed: boolean;
+  videos?: Video[];
 }
 
 export interface CourseData {
@@ -54,6 +63,15 @@ export interface ProgressRecord {
   learning_goal: string;
   is_completed: boolean;
   // Add other fields that might be in the progress record
+}
+
+export interface VideoProgressRecord {
+  video_id: string;
+  module_id: number;
+  current_course: string;
+  learning_goal: string;
+  is_completed: boolean;
+  completed_at?: string;
 }
 
 // Progress function signatures based on actual database module implementations

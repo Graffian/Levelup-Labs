@@ -16,7 +16,51 @@ export const htmlCssMastery = {
       duration: '2h 15m',
       topics: ['HTML Structure', 'Semantic Elements', 'Forms', 'Tables'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf_ZNmuQSXdS197Oyr1L9sPB',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'html-1-1',
+          title: 'Introduction to HTML',
+          duration: '15m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-2',
+          title: 'HTML Document Structure',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-3',
+          title: 'HTML Elements and Tags',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-4',
+          title: 'Semantic HTML Elements',
+          duration: '30m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-5',
+          title: 'HTML Forms and Input Types',
+          duration: '35m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-6',
+          title: 'HTML Tables and Lists',
+          duration: '10m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        }
+      ]
     },
     {
       id: 2,
@@ -25,7 +69,51 @@ export const htmlCssMastery = {
       duration: '2h 30m',
       topics: ['CSS Selectors', 'Box Model', 'Typography', 'Colors'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf8JIgLcu3sHigvQjTw_aC9C',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'css-2-1',
+          title: 'Introduction to CSS',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-2',
+          title: 'CSS Selectors and Specificity',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-3',
+          title: 'The CSS Box Model',
+          duration: '28m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-4',
+          title: 'Typography and Text Styling',
+          duration: '24m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-5',
+          title: 'Colors and Backgrounds',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-6',
+          title: 'CSS Units and Values',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        }
+      ]
     },
     {
       id: 3,
@@ -34,7 +122,44 @@ export const htmlCssMastery = {
       duration: '1h 45m',
       topics: ['Flex Container', 'Flex Items', 'Alignment', 'Responsive Design'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf9RlGiXNUsI8G6sHtJDdDKQ',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'flex-3-1',
+          title: 'Introduction to Flexbox',
+          duration: '15m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-2',
+          title: 'Flex Container Properties',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-3',
+          title: 'Flex Item Properties',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-4',
+          title: 'Flex Alignment and Justification',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        },
+        {
+          id: 'flex-3-5',
+          title: 'Responsive Flexbox Layouts',
+          duration: '23m',
+          videoUrl: 'https://youtube.com/watch?v=3YW65K6LcIA',
+          completed: false
+        }
+      ]
     },
     {
       id: 4,
