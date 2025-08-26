@@ -502,7 +502,51 @@ export const pythonDataScience = {
       duration: '3h 0m',
       topics: ['DataFrames', 'Data Cleaning', 'Merging', 'Grouping'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf9RlGiXNUsI8G6sHtJDdDKQ',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'pandas-3-1',
+          title: 'Introduction to Pandas',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-2',
+          title: 'Creating and Loading DataFrames',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-3',
+          title: 'Data Selection and Filtering',
+          duration: '30m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-4',
+          title: 'Data Cleaning Techniques',
+          duration: '35m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-5',
+          title: 'Merging and Joining DataFrames',
+          duration: '28m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        },
+        {
+          id: 'pandas-3-6',
+          title: 'Grouping and Aggregation',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=vmEHCJofslg',
+          completed: false
+        }
+      ]
     },
     {
       id: 4,
