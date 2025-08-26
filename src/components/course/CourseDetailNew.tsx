@@ -357,6 +357,46 @@ export const CourseDetailNew: React.FC = () => {
     }
   }, [userId, course, progressFunctionsForCommitment]);
 
+  // Calculate progress percentage based on individual video completion
+  const progress = useMemo(() => {
+    if (!course || course.modules.length === 0) return 0;
+
+    let totalVideos = 0;
+    let completedVideoCount = 0;
+    let totalModulesWithoutVideos = 0;
+    let completedModulesWithoutVideos = 0;
+
+    course.modules.forEach(module => {
+      if (module.videos && module.videos.length > 0) {
+        totalVideos += module.videos.length;
+        const moduleCompletedVideos = module.videos.filter(video =>
+          completedVideos.has(video.id)
+        ).length;
+        completedVideoCount += moduleCompletedVideos;
+      } else {
+        totalModulesWithoutVideos++;
+        if (completedModules.has(module.id)) {
+          completedModulesWithoutVideos++;
+        }
+      }
+    });
+
+    // If we have videos, calculate based on video completion
+    if (totalVideos > 0) {
+      const videoProgress = totalVideos > 0 ? (completedVideoCount / totalVideos) : 0;
+      const moduleProgress = totalModulesWithoutVideos > 0 ? (completedModulesWithoutVideos / totalModulesWithoutVideos) : 0;
+
+      // Weighted average: give more weight to videos if most modules have videos
+      const videoWeight = totalVideos / (totalVideos + totalModulesWithoutVideos);
+      const moduleWeight = 1 - videoWeight;
+
+      return Math.round((videoProgress * videoWeight + moduleProgress * moduleWeight) * 100);
+    }
+
+    // Fallback to module-based calculation if no videos
+    return Math.round((completedModules.size / course.modules.length) * 100);
+  }, [course, completedModules, completedVideos]);
+
   // Show loading state
   if (loading) {
     return (
