@@ -450,6 +450,15 @@ export const CourseDetailNew: React.FC = () => {
             } else {
               newModules.delete(moduleId);
             }
+
+            // Save progress to localStorage immediately
+            const progressData = {
+              courseId,
+              modules: Array.from(newModules).map(id => ({ id, completed: true })),
+              videos: Array.from(newCompleted).map(id => ({ id, completed: true }))
+            };
+            localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
+
             return newModules;
           });
         }
