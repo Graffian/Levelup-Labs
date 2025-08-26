@@ -404,6 +404,66 @@ export const CourseDetailNew: React.FC = () => {
     );
   }
 
+  const toggleModuleExpansion = (moduleId: number) => {
+    setExpandedModules(prev => {
+      const newExpanded = new Set(prev);
+      if (newExpanded.has(moduleId)) {
+        newExpanded.delete(moduleId);
+      } else {
+        newExpanded.add(moduleId);
+      }
+      return newExpanded;
+    });
+  };
+
+  const toggleVideoCompletion = (videoId: string, moduleId: number) => {
+    setCompletedVideos(prev => {
+      const newCompleted = new Set(prev);
+      if (newCompleted.has(videoId)) {
+        newCompleted.delete(videoId);
+      } else {
+        newCompleted.add(videoId);
+      }
+
+      // Update module completion based on video completion
+      if (course) {
+        const module = course.modules.find(m => m.id === moduleId);
+        if (module && module.videos) {
+          const completedCount = module.videos.filter(video =>
+            newCompleted.has(video.id) || video.id === videoId
+          ).length;
+          const isModuleComplete = completedCount === module.videos.length;
+
+          setCompletedModules(prevModules => {
+            const newModules = new Set(prevModules);
+            if (isModuleComplete) {
+              newModules.add(moduleId);
+            } else {
+              newModules.delete(moduleId);
+            }
+            return newModules;
+          });
+        }
+      }
+
+      return newCompleted;
+    });
+  };
+
+  const getModuleProgress = (moduleId: number) => {
+    if (!course) return 0;
+    const module = course.modules.find(m => m.id === moduleId);
+    if (!module || !module.videos || module.videos.length === 0) {
+      return completedModules.has(moduleId) ? 100 : 0;
+    }
+
+    const completedCount = module.videos.filter(video =>
+      completedVideos.has(video.id)
+    ).length;
+
+    return Math.round((completedCount / module.videos.length) * 100);
+  };
+
   const toggleModuleCompletion = async (moduleId: number) => {
     if (!userId || !courseId || !course) return;
 
