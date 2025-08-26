@@ -1,5 +1,13 @@
 import { LucideIcon } from "lucide-react";
 
+export interface Video {
+  id: string;
+  title: string;
+  duration: string;
+  videoUrl: string;
+  completed: boolean;
+}
+
 export interface Module {
   id: number;
   title: string;
@@ -8,6 +16,7 @@ export interface Module {
   topics: string[];
   playlistUrl: string;
   completed: boolean;
+  videos?: Video[];
 }
 
 export interface CourseData {
