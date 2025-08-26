@@ -361,7 +361,44 @@ export const designPrinciples = {
       duration: '1h 30m',
       topics: ['Font Types', 'Hierarchy', 'Readability', 'Font Pairing'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf9RlGiXNUsI8G6sHtJDdDKQ',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'typo-3-1',
+          title: 'Introduction to Typography',
+          duration: '14m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-2',
+          title: 'Serif vs Sans-serif Fonts',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-3',
+          title: 'Typography Hierarchy',
+          duration: '21m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-4',
+          title: 'Readability and Legibility',
+          duration: '19m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        },
+        {
+          id: 'typo-3-5',
+          title: 'Font Pairing Techniques',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=sByzHoiYFX0',
+          completed: false
+        }
+      ]
     },
     {
       id: 4,
