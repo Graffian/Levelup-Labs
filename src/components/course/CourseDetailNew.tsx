@@ -287,15 +287,24 @@ export const CourseDetailNew: React.FC = () => {
           modules: updatedModules
         });
         
-        // Load completed modules from localStorage as fallback
+        // Load completed modules and videos from localStorage as fallback
         const savedProgress = localStorage.getItem(`courseProgress_${courseId}`);
         if (savedProgress) {
           const progress = JSON.parse(savedProgress);
+
+          // Load completed modules
           const completed = new Set<number>();
           progress.modules?.forEach((m: {id: number, completed: boolean}) => {
             if (m.completed) completed.add(m.id);
           });
           setCompletedModules(completed);
+
+          // Load completed videos
+          const completedVids = new Set<string>();
+          progress.videos?.forEach((v: {id: string, completed: boolean}) => {
+            if (v.completed) completedVids.add(v.id);
+          });
+          setCompletedVideos(completedVids);
         }
         
       } catch (err) {
