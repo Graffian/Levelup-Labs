@@ -101,6 +101,13 @@ const App = () => {
                 <Route path="experience" element={<OnboardingExperience />} />
               </Route>
 
+              {/* Personalizing Loader */}
+              <Route path="/personalizing/:goalId/:timeId/:experienceId" element={
+                <ErrorBoundary>
+                  <PersonalizingLoader />
+                </ErrorBoundary>
+              } />
+
               {/* Learning Path Page */}
               <Route path="/learning-path/:goalId/:timeId/:experienceId" element={
                 <ErrorBoundary>
