@@ -69,7 +69,51 @@ export const htmlCssMastery = {
       duration: '2h 30m',
       topics: ['CSS Selectors', 'Box Model', 'Typography', 'Colors'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf8JIgLcu3sHigvQjTw_aC9C',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'css-2-1',
+          title: 'Introduction to CSS',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-2',
+          title: 'CSS Selectors and Specificity',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-3',
+          title: 'The CSS Box Model',
+          duration: '28m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-4',
+          title: 'Typography and Text Styling',
+          duration: '24m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-5',
+          title: 'Colors and Backgrounds',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        },
+        {
+          id: 'css-2-6',
+          title: 'CSS Units and Values',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=1PnVor36_40',
+          completed: false
+        }
+      ]
     },
     {
       id: 3,
