@@ -657,6 +657,8 @@ export const CourseDetailNew: React.FC = () => {
           <div className="grid gap-6 max-w-4xl mx-auto">
             {course.modules.map((module, index) => {
               const isCompleted = completedModules.has(module.id);
+              const isExpanded = expandedModules.has(module.id);
+              const moduleProgress = getModuleProgress(module.id);
 
               return (
                 <Card
@@ -677,10 +679,41 @@ export const CourseDetailNew: React.FC = () => {
                   <CardHeader className="pb-4 pl-20">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                       <div className="flex-1">
-                        <CardTitle className="text-xl font-bold text-slate-900 mb-2 group-hover:text-blue-600 transition-colors">
-                          {module.title}
-                        </CardTitle>
-                        <p className="text-slate-600 leading-relaxed">{module.description}</p>
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                            {module.title}
+                          </CardTitle>
+                          {module.videos && module.videos.length > 0 && (
+                            <Collapsible>
+                              <CollapsibleTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleModuleExpansion(module.id)}
+                                  className="p-1 h-6 w-6 rounded-full hover:bg-slate-200"
+                                >
+                                  {isExpanded ? (
+                                    <ChevronDown className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronRight className="h-4 w-4" />
+                                  )}
+                                </Button>
+                              </CollapsibleTrigger>
+                            </Collapsible>
+                          )}
+                        </div>
+                        <p className="text-slate-600 leading-relaxed mb-2">{module.description}</p>
+
+                        {/* Module Progress Bar */}
+                        {module.videos && module.videos.length > 0 && (
+                          <div className="mb-2">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="text-xs text-slate-500">Progress:</span>
+                              <span className="text-xs font-semibold text-slate-700">{moduleProgress}%</span>
+                            </div>
+                            <Progress value={moduleProgress} className="h-2 bg-slate-200" />
+                          </div>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-3">
@@ -721,6 +754,67 @@ export const CourseDetailNew: React.FC = () => {
                       ))}
                     </div>
 
+                    {/* Video List Dropdown */}
+                    {module.videos && module.videos.length > 0 && (
+                      <Collapsible open={isExpanded} onOpenChange={() => toggleModuleExpansion(module.id)}>
+                        <CollapsibleContent className="space-y-2 mb-4">
+                          <div className="bg-slate-50 rounded-lg p-4 border">
+                            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                              <PlayCircle className="h-4 w-4" />
+                              Videos in this module ({module.videos.length})
+                            </h4>
+                            <div className="space-y-2">
+                              {module.videos.map((video, videoIndex) => {
+                                const isVideoCompleted = completedVideos.has(video.id);
+                                return (
+                                  <div
+                                    key={video.id}
+                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
+                                      isVideoCompleted
+                                        ? 'bg-green-50 border-green-200'
+                                        : 'bg-white border-slate-200 hover:border-slate-300'
+                                    }`}
+                                  >
+                                    <Checkbox
+                                      checked={isVideoCompleted}
+                                      onCheckedChange={() => toggleVideoCompletion(video.id, module.id)}
+                                      className="h-4 w-4"
+                                    />
+
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2">
+                                        <span className={`text-sm font-medium ${
+                                          isVideoCompleted ? 'text-green-700 line-through' : 'text-slate-900'
+                                        }`}>
+                                          {videoIndex + 1}. {video.title}
+                                        </span>
+                                        {isVideoCompleted && (
+                                          <Check className="h-4 w-4 text-green-500" />
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-2 mt-1">
+                                        <Clock className="h-3 w-3 text-slate-400" />
+                                        <span className="text-xs text-slate-500">{video.duration}</span>
+                                      </div>
+                                    </div>
+
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => window.open(video.videoUrl, '_blank')}
+                                      className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50"
+                                    >
+                                      <Play className="h-3 w-3" />
+                                    </Button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
+
                     {/* Action Buttons */}
                     <div className="flex flex-wrap gap-3">
                       {module.playlistUrl && (
@@ -731,18 +825,30 @@ export const CourseDetailNew: React.FC = () => {
                           onClick={() => window.open(module.playlistUrl, '_blank')}
                         >
                           <Youtube className="mr-2 h-4 w-4" />
-                          Watch on YouTube
+                          Watch Playlist
                         </Button>
                       )}
 
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-                      >
-                        <PlayCircle className="mr-2 h-4 w-4" />
-                        Start Module
-                      </Button>
+                      {module.videos && module.videos.length > 0 && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => toggleModuleExpansion(module.id)}
+                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
+                        >
+                          {isExpanded ? (
+                            <>
+                              <ChevronDown className="mr-2 h-4 w-4" />
+                              Hide Videos
+                            </>
+                          ) : (
+                            <>
+                              <ChevronRight className="mr-2 h-4 w-4" />
+                              Show Videos ({module.videos.length})
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
 
