@@ -11,6 +11,7 @@ import OnboardingLayout from "./pages/onboarding/OnboardingLayout";
 import OnboardingGoals from "./pages/onboarding/OnboardingGoals";
 import OnboardingTime from "./pages/onboarding/OnboardingTime";
 import OnboardingExperience from "./pages/onboarding/OnboardingExperience";
+import PersonalizingLoader from "./pages/onboarding/PersonalizingLoader";
 import CourseDashboard from "./pages/course/CourseDashboard";
 import Dashboard from "./pages/Dashboard";
 import Resources from "./pages/Resources";
