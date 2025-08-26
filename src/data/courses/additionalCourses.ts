@@ -269,7 +269,44 @@ export const designPrinciples = {
       duration: '2h 0m',
       topics: ['Balance', 'Contrast', 'Hierarchy', 'Alignment'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf_ZNmuQSXdS197Oyr1L9sPB',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'design-1-1',
+          title: 'Introduction to Design Principles',
+          duration: '18m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-2',
+          title: 'Balance and Symmetry',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-3',
+          title: 'Contrast and Emphasis',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-4',
+          title: 'Visual Hierarchy',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        },
+        {
+          id: 'design-1-5',
+          title: 'Alignment and Proximity',
+          duration: '15m',
+          videoUrl: 'https://youtube.com/watch?v=a5KYlHNKQB8',
+          completed: false
+        }
+      ]
     },
     {
       id: 2,
