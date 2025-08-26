@@ -315,7 +315,44 @@ export const designPrinciples = {
       duration: '1h 45m',
       topics: ['Color Wheel', 'Color Harmony', 'Psychology of Color', 'Color Systems'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf8JIgLcu3sHigvQjTw_aC9C',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'color-2-1',
+          title: 'The Color Wheel Basics',
+          duration: '16m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-2',
+          title: 'Primary, Secondary & Tertiary Colors',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-3',
+          title: 'Color Harmony and Schemes',
+          duration: '24m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-4',
+          title: 'Psychology of Color',
+          duration: '22m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        },
+        {
+          id: 'color-2-5',
+          title: 'Color Systems (RGB, CMYK, HSL)',
+          duration: '23m',
+          videoUrl: 'https://youtube.com/watch?v=L1CK9bE3H_s',
+          completed: false
+        }
+      ]
     },
     {
       id: 3,
