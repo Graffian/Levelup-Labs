@@ -234,6 +234,8 @@ export const CourseDetailNew: React.FC = () => {
   
   const [course, setCourse] = useState<CourseData | null>(null);
   const [completedModules, setCompletedModules] = useState<Set<number>>(new Set());
+  const [expandedModules, setExpandedModules] = useState<Set<number>>(new Set());
+  const [completedVideos, setCompletedVideos] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
