@@ -447,7 +447,44 @@ export const pythonDataScience = {
       duration: '2h 30m',
       topics: ['Syntax', 'Data Types', 'Control Structures', 'Functions'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf_ZNmuQSXdS197Oyr1L9sPB',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'python-1-1',
+          title: 'Python Installation and Setup',
+          duration: '12m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-2',
+          title: 'Python Syntax and Variables',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-3',
+          title: 'Data Types and Operators',
+          duration: '30m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-4',
+          title: 'Control Structures (if/else, loops)',
+          duration: '28m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        },
+        {
+          id: 'python-1-5',
+          title: 'Functions and Modules',
+          duration: '35m',
+          videoUrl: 'https://youtube.com/watch?v=rfscVS0vtbw',
+          completed: false
+        }
+      ]
     },
     {
       id: 2,
