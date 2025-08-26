@@ -539,7 +539,8 @@ export const CourseDetailNew: React.FC = () => {
       // Save progress to localStorage as backup
       const progressData = {
         courseId,
-        modules: Array.from(newCompletedModules).map(id => ({ id, completed: true }))
+        modules: Array.from(newCompletedModules).map(id => ({ id, completed: true })),
+        videos: Array.from(completedVideos).map(id => ({ id, completed: true }))
       };
       localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
 
