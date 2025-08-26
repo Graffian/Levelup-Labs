@@ -16,7 +16,51 @@ export const htmlCssMastery = {
       duration: '2h 15m',
       topics: ['HTML Structure', 'Semantic Elements', 'Forms', 'Tables'],
       playlistUrl: 'https://youtube.com/playlist?list=PLr6-GrHUlVf_ZNmuQSXdS197Oyr1L9sPB',
-      completed: false
+      completed: false,
+      videos: [
+        {
+          id: 'html-1-1',
+          title: 'Introduction to HTML',
+          duration: '15m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-2',
+          title: 'HTML Document Structure',
+          duration: '20m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-3',
+          title: 'HTML Elements and Tags',
+          duration: '25m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-4',
+          title: 'Semantic HTML Elements',
+          duration: '30m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-5',
+          title: 'HTML Forms and Input Types',
+          duration: '35m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        },
+        {
+          id: 'html-1-6',
+          title: 'HTML Tables and Lists',
+          duration: '10m',
+          videoUrl: 'https://youtube.com/watch?v=UB1O30fR-EE',
+          completed: false
+        }
+      ]
     },
     {
       id: 2,
