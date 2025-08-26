@@ -65,6 +65,15 @@ export interface ProgressRecord {
   // Add other fields that might be in the progress record
 }
 
+export interface VideoProgressRecord {
+  video_id: string;
+  module_id: number;
+  current_course: string;
+  learning_goal: string;
+  is_completed: boolean;
+  completed_at?: string;
+}
+
 // Progress function signatures based on actual database module implementations
 type ProgressCheckFunction = (clerkUserId: string) => Promise<Array<{ module_id: number }>>;
 type ProgressDeleteFunction = (moduleId: number, clerkUserId: string, currentCourse: string, currentModule: string) => Promise<void>;
