@@ -10,12 +10,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { 
-  AlertCircle, 
-  Clock, 
-  BookOpen, 
-  Check, 
-  Youtube, 
+import {
+  AlertCircle,
+  Clock,
+  BookOpen,
+  Check,
+  Youtube,
   ArrowLeft,
   Users,
   Award,
@@ -25,7 +25,9 @@ import {
   Palette,
   Brain,
   PlayCircle,
-  ExternalLink
+  ExternalLink,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 
 // Import course data
