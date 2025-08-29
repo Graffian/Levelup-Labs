@@ -190,7 +190,7 @@ const OnboardingLayout = () => {
             <div className="mb-8">
               <div className="flex items-center justify-between">
                 {ONBOARDING_STEPS.map((step, index) => (
-                  <React.Fragment key={step.path}>
+                  <div key={step.path} className="flex items-center">
                     <div
                       className={`flex flex-col items-center ${
                         index <= currentStepIndex ? 'text-primary' : 'text-muted-foreground'
@@ -210,7 +210,7 @@ const OnboardingLayout = () => {
                     {index < ONBOARDING_STEPS.length - 1 && (
                       <div className="h-0.5 flex-1 bg-border mx-2" />
                     )}
-                  </React.Fragment>
+                  </div>
                 ))}
               </div>
             </div>
