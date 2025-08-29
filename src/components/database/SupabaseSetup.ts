@@ -4,7 +4,9 @@ import { createClient } from "@supabase/supabase-js"
 const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey && /^https?:\/\//.test(String(supabaseUrl)))
+
+export const supabase = createClient(String(supabaseUrl || ''), String(supabaseAnonKey || ''))
 
 // Create a function that returns a function to get Supabase client with Clerk session
 export const createSupabaseClient = (getToken: () => Promise<string | null>) => {
