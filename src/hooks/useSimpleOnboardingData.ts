@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/components/database/progress/SimpleSupabaseClient';
+import { supabase, isSupabaseConfigured } from '@/components/database/progress/SimpleSupabaseClient';
 
 interface OnboardingData {
   learning_goal: string | null;
