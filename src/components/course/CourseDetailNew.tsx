@@ -339,6 +339,11 @@ export const CourseDetailNew: React.FC = () => {
 
       if (isSignedIn && clerkUserId) {
         try {
+          const jwt = await getToken({ template: 'supabase' });
+          if (!jwt) {
+            setEnrolled(!!localStorage.getItem(localKey));
+            return;
+          }
           const getClient = await getSupabaseClient();
           const supabaseWithSession = await getClient();
           const { data, error } = await supabaseWithSession
@@ -348,14 +353,15 @@ export const CourseDetailNew: React.FC = () => {
             .maybeSingle();
 
           if (error) {
-            console.error('Enrollment check error:', error);
+            console.error('Enrollment check error:', { message: error.message, code: (error as any).code, details: (error as any).details });
+            // If table missing or RLS blocks, fallback to local enrollment
             setEnrolled(!!localStorage.getItem(localKey));
             return;
           }
 
           setEnrolled(!!data);
-        } catch (e) {
-          console.error('Enrollment check unexpected error:', e);
+        } catch (e: any) {
+          console.error('Enrollment check unexpected error:', e?.message || e);
           setEnrolled(!!localStorage.getItem(localKey));
         }
       } else {
@@ -364,7 +370,7 @@ export const CourseDetailNew: React.FC = () => {
     };
 
     checkEnrollment();
-  }, [isSignedIn, clerkUserId, getSupabaseClient, course, courseId]);
+  }, [isSignedIn, clerkUserId, getSupabaseClient, course, courseId, getToken]);
 
   // Load user's progress from database when userId is available
   useEffect(() => {
@@ -575,6 +581,13 @@ export const CourseDetailNew: React.FC = () => {
       const currentPath = new URLSearchParams(location.search).get('path') || courseId || 'path';
 
       if (isSignedIn && clerkUserId) {
+        const jwt = await getToken({ template: 'supabase' });
+        if (!jwt) {
+          localStorage.setItem(`enrolled_course_${courseId}`, 'true');
+          setEnrolled(true);
+          toast({ title: 'Enrolled locally', description: 'Sign in to save your enrollment to your account.' });
+          return;
+        }
         const getClient = await getSupabaseClient();
         const supabaseWithSession = await getClient();
         const { error } = await supabaseWithSession
@@ -588,6 +601,7 @@ export const CourseDetailNew: React.FC = () => {
           }, { onConflict: 'clerk_user_id' });
 
         if (error) {
+          console.error('Enroll upsert error:', { message: error.message, code: (error as any).code, details: (error as any).details });
           throw error;
         }
         setEnrolled(true);
