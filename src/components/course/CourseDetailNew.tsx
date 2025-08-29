@@ -450,6 +450,30 @@ export const CourseDetailNew: React.FC = () => {
     return Math.round((completedModules.size / course.modules.length) * 100);
   }, [course, completedModules, completedVideos]);
 
+  // Sync progress to DB when it changes (placed after progress is defined)
+  useEffect(() => {
+    const syncProgress = async () => {
+      if (!enrolled || !course || !isSignedIn || !clerkUserId || !isSupabaseConfigured) return;
+      try {
+        const jwt = await getToken({ template: 'supabase' });
+        if (!jwt) return;
+        const getClient = await getSupabaseClient();
+        const supabaseWithSession = await getClient();
+        await supabaseWithSession
+          .from('user_course_enrollments')
+          .upsert({
+            clerk_user_id: clerkUserId,
+            current_course: course.title,
+            total_modules_in_course: course.modules.length,
+            course_progress_in_percentage: progress ?? 0
+          }, { onConflict: 'clerk_user_id' });
+      } catch (e) {
+        console.error('Progress sync error:', e);
+      }
+    };
+    syncProgress();
+  }, [progress, enrolled, course, isSignedIn, clerkUserId, isSupabaseConfigured, getToken, getSupabaseClient]);
+
   // Show loading state
   if (loading) {
     return (
