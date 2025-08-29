@@ -32,6 +32,8 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
 import { createSupabaseClient, isSupabaseConfigured } from '@/components/database/SupabaseSetup';
+import EnrollmentCheck from '@/components/database/enrollment/EnrollmentCheck';
+import EnrollmentUpsert from '@/components/database/enrollment/EnrollmentUpsert';
 
 // Import course data
 import { htmlCssMastery } from '@/data/courses/htmlCssMastery';
