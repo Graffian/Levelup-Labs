@@ -376,22 +376,14 @@ export const CourseDetailNew: React.FC = () => {
             setEnrolled(false);
             return;
           }
-          const getClient = await getSupabaseClient();
-          const supabaseWithSession = await getClient();
-          const { data, error } = await supabaseWithSession
-            .from('user_course_enrollments')
-            .select('clerk_user_id')
-            .eq('clerk_user_id', clerkUserId)
-            .limit(1);
-
-          if (error) {
-            const payload = { message: error.message, code: (error as any).code, details: (error as any).details };
-            console.error('Enrollment check error:', JSON.stringify(payload));
-            setEnrolled(false);
-            return;
+          const result = await EnrollmentCheck(() => getToken({ template: 'supabase' }), clerkUserId)
+          if (result.error) {
+            const payload = { message: result.error.message, name: result.error.name }
+            console.error('Enrollment check error:', JSON.stringify(payload))
+            setEnrolled(false)
+            return
           }
-
-          setEnrolled(!!data && data.length > 0);
+          setEnrolled(result.enrolled);
         } catch (e: any) {
           const msg = typeof e === 'object' ? JSON.stringify({ message: e?.message, name: e?.name }) : String(e);
           console.error('Enrollment check unexpected error:', msg);
