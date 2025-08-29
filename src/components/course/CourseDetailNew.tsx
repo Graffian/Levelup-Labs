@@ -362,17 +362,16 @@ export const CourseDetailNew: React.FC = () => {
   }, [courseId, timeCommitment, navigate]);
 
 
-  // Check enrollment state (DB if signed in, otherwise localStorage)
+  // Check enrollment state (DB-only)
   useEffect(() => {
     const checkEnrollment = async () => {
       if (!course) return;
-      const localKey = `enrolled_course_${courseId}`;
 
       if (isSignedIn && clerkUserId && isSupabaseConfigured) {
         try {
           const jwt = await getToken({ template: 'supabase' });
           if (!jwt) {
-            setEnrolled(!!localStorage.getItem(localKey));
+            setEnrolled(false);
             return;
           }
           const getClient = await getSupabaseClient();
@@ -386,8 +385,7 @@ export const CourseDetailNew: React.FC = () => {
           if (error) {
             const payload = { message: error.message, code: (error as any).code, details: (error as any).details };
             console.error('Enrollment check error:', JSON.stringify(payload));
-            // If table missing or RLS blocks, fallback to local enrollment
-            setEnrolled(!!localStorage.getItem(localKey));
+            setEnrolled(false);
             return;
           }
 
@@ -395,10 +393,10 @@ export const CourseDetailNew: React.FC = () => {
         } catch (e: any) {
           const msg = typeof e === 'object' ? JSON.stringify({ message: e?.message, name: e?.name }) : String(e);
           console.error('Enrollment check unexpected error:', msg);
-          setEnrolled(!!localStorage.getItem(localKey));
+          setEnrolled(false);
         }
       } else {
-        setEnrolled(!!localStorage.getItem(localKey));
+        setEnrolled(false);
       }
     };
 
@@ -642,9 +640,8 @@ export const CourseDetailNew: React.FC = () => {
       if (isSignedIn && clerkUserId && isSupabaseConfigured) {
         const jwt = await getToken({ template: 'supabase' });
         if (!jwt) {
-          localStorage.setItem(`enrolled_course_${courseId}`, 'true');
-          setEnrolled(true);
-          toast({ title: 'Enrolled locally', description: 'Sign in to save your enrollment to your account.' });
+          toast({ title: 'Sign in required', description: 'Please sign in to enroll.' });
+          setEnrolled(false);
           return;
         }
         const getClient = await getSupabaseClient();
@@ -665,12 +662,10 @@ export const CourseDetailNew: React.FC = () => {
           throw error;
         }
         setEnrolled(true);
-        localStorage.setItem(`enrolled_course_${courseId}`, 'true');
         toast({ title: 'Enrolled!', description: 'You are enrolled. Course curriculum unlocked.' });
       } else {
-        localStorage.setItem(`enrolled_course_${courseId}`, 'true');
-        setEnrolled(true);
-        toast({ title: 'Enrolled locally', description: 'Sign in to save your enrollment to your account.' });
+        toast({ title: 'Sign in required', description: 'Please sign in to enroll.' });
+        setEnrolled(false);
       }
     } catch (e: any) {
       console.error('Enroll error:', e);
