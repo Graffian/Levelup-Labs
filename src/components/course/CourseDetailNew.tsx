@@ -376,6 +376,7 @@ export const CourseDetailNew: React.FC = () => {
   useEffect(() => {
     const loadUserProgress = async () => {
       if (!userId || !courseId) return;
+      if (!isSupabaseConfigured) return;
 
       try {
         const userProgress = await progressFunctionsForCommitment.check({ userId });
