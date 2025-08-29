@@ -6,6 +6,7 @@ create table if not exists public.user_course_enrollments (
   current_course text,
   total_modules_in_course integer default 0,
   enrolled_at timestamp not null default now(),
+  course_progress_in_percentage integer default 0,
   constraint user_course_enrollments_pkey primary key (clerk_user_id),
   constraint user_course_enrollments_clerk_fk foreign key (clerk_user_id)
     references public.user_login_credentials (clerk_user_id)
