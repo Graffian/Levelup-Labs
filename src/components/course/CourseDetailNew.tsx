@@ -638,22 +638,17 @@ export const CourseDetailNew: React.FC = () => {
           setEnrolled(false);
           return;
         }
-        const getClient = await getSupabaseClient();
-        const supabaseWithSession = await getClient();
-        const { error } = await supabaseWithSession
-          .from('user_course_enrollments')
-          .upsert({
-            clerk_user_id: clerkUserId,
-            learning_goal: learningGoal,
-            current_path: currentPath,
-            current_course: course.title,
-            total_modules_in_course: course.modules.length
-          }, { onConflict: 'clerk_user_id' });
-
-        if (error) {
-          const payload = { message: error.message, code: (error as any).code, details: (error as any).details };
-          console.error('Enroll upsert error:', JSON.stringify(payload));
-          throw error;
+        const upsert = await EnrollmentUpsert(() => getToken({ template: 'supabase' }), {
+          clerk_user_id: clerkUserId,
+          learning_goal: learningGoal,
+          current_path: currentPath,
+          current_course: course.title,
+          total_modules_in_course: course.modules.length
+        })
+        if (!upsert.success) {
+          const payload = { message: upsert.error?.message, name: upsert.error?.name }
+          console.error('Enroll upsert error:', JSON.stringify(payload))
+          throw upsert.error
         }
         setEnrolled(true);
         toast({ title: 'Enrolled!', description: 'You are enrolled. Course curriculum unlocked.' });
