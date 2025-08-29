@@ -30,6 +30,8 @@ import {
   ChevronDown,
   ChevronRight
 } from 'lucide-react';
+import { useAuth } from '@clerk/clerk-react';
+import { createSupabaseClient } from '@/components/database/SupabaseSetup';
 
 // Import course data
 import { htmlCssMastery } from '@/data/courses/htmlCssMastery';
@@ -214,8 +216,16 @@ export const CourseDetailNew: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { isSignedIn, userId: clerkUserId, getToken } = useAuth();
   // Simple user identification system (no Clerk)
   const [userId, setUserId] = useState<string>('');
+  const [enrolled, setEnrolled] = useState<boolean>(false);
+  const [enrollLoading, setEnrollLoading] = useState<boolean>(false);
+
+  const getSupabaseClient = useCallback(async () => {
+    const token = await getToken({ template: 'supabase' });
+    return createSupabaseClient(() => Promise.resolve(token));
+  }, [getToken]);
 
   // Initialize user ID on component mount
   useEffect(() => {
@@ -320,6 +330,41 @@ export const CourseDetailNew: React.FC = () => {
 
     fetchCourseData();
   }, [courseId, timeCommitment, navigate]);
+
+  // Check enrollment state (DB if signed in, otherwise localStorage)
+  useEffect(() => {
+    const checkEnrollment = async () => {
+      if (!course) return;
+      const localKey = `enrolled_course_${courseId}`;
+
+      if (isSignedIn && clerkUserId) {
+        try {
+          const getClient = await getSupabaseClient();
+          const supabaseWithSession = await getClient();
+          const { data, error } = await supabaseWithSession
+            .from('user_course_enrollments')
+            .select('clerk_user_id, current_course')
+            .eq('clerk_user_id', clerkUserId)
+            .maybeSingle();
+
+          if (error) {
+            console.error('Enrollment check error:', error);
+            setEnrolled(!!localStorage.getItem(localKey));
+            return;
+          }
+
+          setEnrolled(!!data);
+        } catch (e) {
+          console.error('Enrollment check unexpected error:', e);
+          setEnrolled(!!localStorage.getItem(localKey));
+        }
+      } else {
+        setEnrolled(!!localStorage.getItem(localKey));
+      }
+    };
+
+    checkEnrollment();
+  }, [isSignedIn, clerkUserId, getSupabaseClient, course, courseId]);
 
   // Load user's progress from database when userId is available
   useEffect(() => {
@@ -522,6 +567,45 @@ export const CourseDetailNew: React.FC = () => {
     return Math.round((completedCount / module.videos.length) * 100);
   };
 
+  const handleEnroll = async () => {
+    if (!course) return;
+    setEnrollLoading(true);
+    try {
+      const learningGoal = new URLSearchParams(location.search).get('goal') || onboardingData?.learning_goal || 'General Learning';
+      const currentPath = new URLSearchParams(location.search).get('path') || courseId || 'path';
+
+      if (isSignedIn && clerkUserId) {
+        const getClient = await getSupabaseClient();
+        const supabaseWithSession = await getClient();
+        const { error } = await supabaseWithSession
+          .from('user_course_enrollments')
+          .upsert({
+            clerk_user_id: clerkUserId,
+            learning_goal: learningGoal,
+            current_path: currentPath,
+            current_course: course.title,
+            total_modules_in_course: course.modules.length
+          }, { onConflict: 'clerk_user_id' });
+
+        if (error) {
+          throw error;
+        }
+        setEnrolled(true);
+        localStorage.setItem(`enrolled_course_${courseId}`, 'true');
+        toast({ title: 'Enrolled!', description: 'You are enrolled. Course curriculum unlocked.' });
+      } else {
+        localStorage.setItem(`enrolled_course_${courseId}`, 'true');
+        setEnrolled(true);
+        toast({ title: 'Enrolled locally', description: 'Sign in to save your enrollment to your account.' });
+      }
+    } catch (e: any) {
+      console.error('Enroll error:', e);
+      toast({ title: 'Enrollment failed', description: 'Please try again.', variant: 'destructive' });
+    } finally {
+      setEnrollLoading(false);
+    }
+  };
+
   const toggleModuleCompletion = async (moduleId: number) => {
     if (!userId || !courseId || !course) return;
 
@@ -700,6 +784,16 @@ export const CourseDetailNew: React.FC = () => {
 
       {/* Course Modules */}
       <div className="container mx-auto px-4 py-12">
+        {!enrolled ? (
+          <div className="max-w-3xl mx-auto text-center bg-white/70 backdrop-blur-sm border rounded-2xl p-8">
+            <h2 className="text-3xl font-bold text-slate-900 mb-3">Enroll for Free</h2>
+            <p className="text-slate-600 mb-6">Get instant access to the full curriculum, track progress, and earn a certificate.</p>
+            <Button size="lg" onClick={handleEnroll} disabled={enrollLoading} className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:opacity-90 text-white">
+              {enrollLoading ? 'Enrolling...' : 'Enroll for free'}
+            </Button>
+          </div>
+        ) : (
+        <>
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-slate-900 mb-4">Course Curriculum</h2>
           <p className="text-lg text-slate-600 max-w-2xl mx-auto">
@@ -922,6 +1016,8 @@ export const CourseDetailNew: React.FC = () => {
             <h3 className="text-lg font-semibold text-slate-900 mb-2">No modules available</h3>
             <p className="text-slate-600">This course content is being prepared. Check back soon!</p>
           </div>
+        )}
+        </>
         )}
 
         {/* Course Stats */}
