@@ -464,7 +464,8 @@ export const CourseDetailNew: React.FC = () => {
           .upsert({
             clerk_user_id: clerkUserId,
             current_course: course.title,
-            total_modules_in_course: course.modules.length
+            total_modules_in_course: course.modules.length,
+            course_progress_in_percentage: progress ?? 0
           }, { onConflict: 'clerk_user_id' });
       } catch (e) {
         console.error('Progress sync error:', e);
