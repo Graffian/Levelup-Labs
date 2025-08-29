@@ -33,6 +33,15 @@ export const useSimpleOnboardingData = (userId: string | null) => {
 
       try {
         setLoading(true);
+        if (!isSupabaseConfigured) {
+          setData({
+            learning_goal: goalFromUrl || 'General Learning',
+            time_commitment: timeCommitmentFromUrl || 'moderate',
+            experience_level: experienceFromUrl || 'beginner'
+          });
+          setError(null);
+          return;
+        }
         const { data: onboardingData, error: fetchError } = await supabase
           .from('onboarding_data')
           .select('learning_goal, time_commitment, experience_level')
@@ -40,7 +49,7 @@ export const useSimpleOnboardingData = (userId: string | null) => {
           .maybeSingle();
 
         if (fetchError) {
-          console.error('Error fetching onboarding data:', fetchError);
+          console.error('Error fetching onboarding data:', { message: fetchError.message, code: (fetchError as any).code, details: (fetchError as any).details });
           setError(`Failed to fetch onboarding data: ${fetchError.message}`);
           // Use URL parameters as fallback on error
           setData({
