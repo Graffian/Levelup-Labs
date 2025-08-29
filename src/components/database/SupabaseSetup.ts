@@ -6,7 +6,21 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey && /^https?:\/\//.test(String(supabaseUrl)))
 
-export const supabase = createClient(String(supabaseUrl || ''), String(supabaseAnonKey || ''))
+const safeFetch: typeof fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+  const f = (globalThis.fetch || window.fetch).bind(globalThis) as typeof fetch
+  const res = await f(input, init)
+  try {
+    return res.clone()
+  } catch {
+    return res
+  }
+}
+
+export const supabase = createClient(String(supabaseUrl || ''), String(supabaseAnonKey || ''), {
+  global: {
+    fetch: safeFetch
+  }
+})
 
 // Create a function that returns a function to get Supabase client with Clerk session
 export const createSupabaseClient = (getToken: () => Promise<string | null>) => {
@@ -26,7 +40,8 @@ export const createSupabaseClient = (getToken: () => Promise<string | null>) => 
           global: {
             headers: {
               Authorization: `Bearer ${token}`
-            }
+            },
+            fetch: safeFetch
           }
         }
       )
