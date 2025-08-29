@@ -634,7 +634,7 @@ export const CourseDetailNew: React.FC = () => {
     setEnrollLoading(true);
     try {
       const learningGoal = new URLSearchParams(location.search).get('goal') || onboardingData?.learning_goal || 'General Learning';
-      const currentPath = new URLSearchParams(location.search).get('path') || courseId || 'path';
+      const currentPath = getLearningPathForCourse(courseId, course.title);
 
       if (isSignedIn && clerkUserId && isSupabaseConfigured) {
         const jwt = await getToken({ template: 'supabase' });
