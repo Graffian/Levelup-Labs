@@ -31,7 +31,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@clerk/clerk-react';
-import { createSupabaseClient } from '@/components/database/SupabaseSetup';
+import { createSupabaseClient, isSupabaseConfigured } from '@/components/database/SupabaseSetup';
 
 // Import course data
 import { htmlCssMastery } from '@/data/courses/htmlCssMastery';
