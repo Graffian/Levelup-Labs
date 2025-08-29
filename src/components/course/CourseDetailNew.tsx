@@ -210,6 +210,36 @@ const courseDataMap: Record<string, CourseData> = {
   'deep-learning-tensorflow': deepLearningTensorflow,
 };
 
+// Learning path mapping by course
+const courseSlugToPath: Record<string, string> = {
+  'html-css-mastery': 'Frontend Fundamentals',
+  'react-complete-guide': 'Modern Frontend Fundamentals',
+  'javascript-essentials': 'Programming Fundamentals',
+  'typescript-react': 'Modern Frontend Fundamentals',
+  'nodejs-express': 'Backend Essentials',
+  'database-sql': 'Data Foundations',
+  'design-principles': 'Design Foundations',
+  'ux-design': 'Design Foundations',
+  'figma-course': 'Design Foundations',
+  'python-data-science': 'Data Science Foundations',
+  'statistics-probability': 'Data Science Foundations',
+  'ml-fundamentals': 'Machine Learning Foundations',
+  'deep-learning-tensorflow': 'Machine Learning Foundations'
+};
+
+const getLearningPathForCourse = (slug: string | undefined, title: string): string => {
+  if (slug && courseSlugToPath[slug]) return courseSlugToPath[slug];
+  const normalized = title.toLowerCase();
+  if (normalized.includes('react')) return 'Modern Frontend Fundamentals';
+  if (normalized.includes('html') || normalized.includes('css')) return 'Frontend Fundamentals';
+  if (normalized.includes('node') || normalized.includes('express')) return 'Backend Essentials';
+  if (normalized.includes('sql') || normalized.includes('database')) return 'Data Foundations';
+  if (normalized.includes('design')) return 'Design Foundations';
+  if (normalized.includes('python') || normalized.includes('data')) return 'Data Science Foundations';
+  if (normalized.includes('learning')) return 'Machine Learning Foundations';
+  return 'General Learning Path';
+};
+
 export const CourseDetailNew: React.FC = () => {
   const { courseSlug } = useParams<{ courseSlug: string }>();
   const courseId = courseSlug; // Use courseSlug as courseId for consistency
