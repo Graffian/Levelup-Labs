@@ -337,7 +337,7 @@ export const CourseDetailNew: React.FC = () => {
       if (!course) return;
       const localKey = `enrolled_course_${courseId}`;
 
-      if (isSignedIn && clerkUserId) {
+      if (isSignedIn && clerkUserId && isSupabaseConfigured) {
         try {
           const jwt = await getToken({ template: 'supabase' });
           if (!jwt) {
@@ -580,7 +580,7 @@ export const CourseDetailNew: React.FC = () => {
       const learningGoal = new URLSearchParams(location.search).get('goal') || onboardingData?.learning_goal || 'General Learning';
       const currentPath = new URLSearchParams(location.search).get('path') || courseId || 'path';
 
-      if (isSignedIn && clerkUserId) {
+      if (isSignedIn && clerkUserId && isSupabaseConfigured) {
         const jwt = await getToken({ template: 'supabase' });
         if (!jwt) {
           localStorage.setItem(`enrolled_course_${courseId}`, 'true');
