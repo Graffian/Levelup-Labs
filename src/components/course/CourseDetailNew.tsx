@@ -376,11 +376,10 @@ export const CourseDetailNew: React.FC = () => {
           }
           const getClient = await getSupabaseClient();
           const supabaseWithSession = await getClient();
-          const { data, error } = await supabaseWithSession
+          const { count, error } = await supabaseWithSession
             .from('user_course_enrollments')
-            .select('clerk_user_id, current_course')
-            .eq('clerk_user_id', clerkUserId)
-            .maybeSingle();
+            .select('clerk_user_id', { count: 'exact', head: true })
+            .eq('clerk_user_id', clerkUserId);
 
           if (error) {
             const payload = { message: error.message, code: (error as any).code, details: (error as any).details };
@@ -389,7 +388,7 @@ export const CourseDetailNew: React.FC = () => {
             return;
           }
 
-          setEnrolled(!!data);
+          setEnrolled(!!count && count > 0);
         } catch (e: any) {
           const msg = typeof e === 'object' ? JSON.stringify({ message: e?.message, name: e?.name }) : String(e);
           console.error('Enrollment check unexpected error:', msg);
