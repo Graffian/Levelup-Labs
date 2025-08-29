@@ -384,7 +384,8 @@ export const CourseDetailNew: React.FC = () => {
             .maybeSingle();
 
           if (error) {
-            console.error('Enrollment check error:', { message: error.message, code: (error as any).code, details: (error as any).details });
+            const payload = { message: error.message, code: (error as any).code, details: (error as any).details };
+            console.error('Enrollment check error:', JSON.stringify(payload));
             // If table missing or RLS blocks, fallback to local enrollment
             setEnrolled(!!localStorage.getItem(localKey));
             return;
@@ -392,7 +393,8 @@ export const CourseDetailNew: React.FC = () => {
 
           setEnrolled(!!data);
         } catch (e: any) {
-          console.error('Enrollment check unexpected error:', e?.message || e);
+          const msg = typeof e === 'object' ? JSON.stringify({ message: e?.message, name: e?.name }) : String(e);
+          console.error('Enrollment check unexpected error:', msg);
           setEnrolled(!!localStorage.getItem(localKey));
         }
       } else {
@@ -497,8 +499,9 @@ export const CourseDetailNew: React.FC = () => {
             total_modules_in_course: course.modules.length,
             course_progress_in_percentage: progress ?? 0
           }, { onConflict: 'clerk_user_id' });
-      } catch (e) {
-        console.error('Progress sync error:', e);
+      } catch (e: any) {
+        const msg = typeof e === 'object' ? JSON.stringify({ message: e?.message, name: e?.name }) : String(e);
+        console.error('Progress sync error:', msg);
       }
     };
     syncProgress();
@@ -657,7 +660,8 @@ export const CourseDetailNew: React.FC = () => {
           }, { onConflict: 'clerk_user_id' });
 
         if (error) {
-          console.error('Enroll upsert error:', { message: error.message, code: (error as any).code, details: (error as any).details });
+          const payload = { message: error.message, code: (error as any).code, details: (error as any).details };
+          console.error('Enroll upsert error:', JSON.stringify(payload));
           throw error;
         }
         setEnrolled(true);
