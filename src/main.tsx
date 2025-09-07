@@ -25,10 +25,12 @@ createRoot(document.getElementById("root")!).render(
     <ClerkProvider 
       publishableKey={PUBLISHABLE_KEY}
       appearance={clerkAppearance}
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/onboarding"
       signInUrl="/sign-in"
       signUpUrl="/sign-up"
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/onboarding"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/onboarding"
     >
       <App />
     </ClerkProvider>

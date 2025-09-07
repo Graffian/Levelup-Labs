@@ -1,7 +1,7 @@
 {
   "rewrites": [
     {
-      "source": "/signup/sso-callback",
+      "source": "/sign-up/sso-callback",
       "destination": "/index.html"
     },
     {
@@ -11,14 +11,19 @@
   ],
   "redirects": [
     {
-      "source": "/signup/sso-callback",
-      "destination": "/",
+      "source": "/sign-in",
+      "destination": "/sign-in",
+      "permanent": false
+    },
+    {
+      "source": "/sign-up",
+      "destination": "/sign-up",
       "permanent": false
     }
   ],
   "headers": [
     {
-      "source": "/signup/sso-callback",
+      "source": "/sign-up/sso-callback",
       "headers": [
         {
           "key": "Cache-Control",
