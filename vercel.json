@@ -2,7 +2,11 @@
   "rewrites": [
     {
       "source": "/sign-up/sso-callback",
-      "destination": "/index.html"
+      "destination": "/sign-up"
+    },
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
     },
     {
       "source": "/(.*)",
@@ -18,6 +22,11 @@
     {
       "source": "/sign-up",
       "destination": "/sign-up",
+      "permanent": false
+    },
+    {
+      "source": "/dashboard",
+      "destination": "/dashboard",
       "permanent": false
     }
   ],
