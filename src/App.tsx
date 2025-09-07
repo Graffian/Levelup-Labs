@@ -88,12 +88,13 @@ const App = () => {
                 <ErrorBoundary>
                   <SignUpPage />
                 </ErrorBoundary>
-              } />
-              <Route path="/sign-up/sso-callback" element={
-                <ErrorBoundary>
-                  <SignUpPage />
-                </ErrorBoundary>
-              } />
+              }>
+                <Route path="sso-callback" element={
+                  <ErrorBoundary>
+                    <SignUpPage />
+                  </ErrorBoundary>
+                } />
+              </Route>
 
               {/* Onboarding flow */}
               <Route path="/onboarding" element={

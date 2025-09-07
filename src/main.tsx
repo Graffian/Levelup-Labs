@@ -1,15 +1,16 @@
 
-import { createRoot } from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import { ClerkProvider } from '@clerk/clerk-react'
+import { createRoot } from 'react-dom/client';
+import React from 'react';
+import App from './App';
+import './index.css';
+import { ClerkProvider } from '@clerk/clerk-react';
 import { BrowserRouter } from 'react-router-dom';
 
 // Your Clerk publishable key
-const PUBLISHABLE_KEY = "pk_test_bm9ybWFsLW1hbmF0ZWUtMzcuY2xlcmsuYWNjb3VudHMuZGV2JA";
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_bm9ybWFsLW1hbmF0ZWUtMzcuY2xlcmsuYWNjb3VudHMuZGV2JA";
 
 if (!PUBLISHABLE_KEY) {
-    throw new Error("Missing Publishable Key");
+  throw new Error("Missing Publishable Key");
 }
 
 // Configure Clerk appearance
@@ -20,19 +21,18 @@ const clerkAppearance = {
   },
 };
 
-createRoot(document.getElementById("root")!).render(
-  <BrowserRouter>
-    <ClerkProvider 
-      publishableKey={PUBLISHABLE_KEY}
-      appearance={clerkAppearance}
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-      afterSignInUrl="/dashboard"
-      afterSignUpUrl="/onboarding"
-      signInFallbackRedirectUrl="/dashboard"
-      signUpFallbackRedirectUrl="/onboarding"
-    >
-      <App />
-    </ClerkProvider>
-  </BrowserRouter>
+// Create root and render the app
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <ClerkProvider 
+        publishableKey={PUBLISHABLE_KEY}
+        appearance={clerkAppearance}
+      >
+        <App />
+      </ClerkProvider>
+    </BrowserRouter>
+  </React.StrictMode>
 );
