@@ -79,12 +79,17 @@ const App = () => {
                   <Index />
                 </ErrorBoundary>
               } />
-              <Route path="/signin/*" element={
+              <Route path="/sign-in" element={
                 <ErrorBoundary>
                   <SignInPage />
                 </ErrorBoundary>
               } />
-              <Route path="/signup/*" element={
+              <Route path="/sign-up" element={
+                <ErrorBoundary>
+                  <SignUpPage />
+                </ErrorBoundary>
+              } />
+              <Route path="/sign-up/sso-callback" element={
                 <ErrorBoundary>
                   <SignUpPage />
                 </ErrorBoundary>
