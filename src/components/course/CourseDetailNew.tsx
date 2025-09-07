@@ -11,6 +11,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 import {
   AlertCircle,
   Clock,
@@ -65,11 +66,7 @@ import type {
 import { useSimpleOnboardingData } from '@/hooks/useSimpleOnboardingData';
 
 // Import progress components from their actual locations
-import { 
-  MinimalProgressCheck, 
-  MinimalProgressDelete, 
-  MinimalProgressInsert 
-} from '@/components/database/progress/MinimalProgress';
+import { MinimalProgressCheck, MinimalProgressDelete, MinimalProgressInsert, MinimalProgressUpdate } from '../database/progress/MinimalProgress';
 import {
   ModerateProgressCheck,
   ModerateProgressDelete,
@@ -86,14 +83,46 @@ import {
   IntensiveProgressInsert
 } from '@/components/database/progress/IntensiveProgress';
 
+// Define the progress functions interface with proper return types
+interface ProgressFunctions {
+  check: (params: { userId: string }) => Promise<any[]>;
+  delete: (params: { 
+    moduleId: number; 
+    userId: string; 
+    currentCourse: string; 
+    currentModule: string;
+  }) => Promise<{ success: boolean; error?: string }>;
+  insert: (params: {
+    userId: string;
+    learningGoal: string;
+    currentCourse: string;
+    currentModule: string;
+    totalModulesInCourse: number;
+    isCompleted: boolean;
+    moduleId: number;
+  }) => Promise<{ success: boolean; error?: string; data?: any }>;
+  update: (params: {
+    userId: string;
+    moduleId: number;
+    video_id: number;
+    current_video: string;
+    isCompleted: boolean;
+  }) => Promise<{ success: boolean; error?: string }>;
+}
+
 // Map time commitment levels to their progress functions
-const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'getCompleted'>> = {
+const progressFunctions: Record<TimeCommitmentLevel, ProgressFunctions> = {
   minimal: {
-    check: async (params: any) => {
+    check: async (params: { userId: string }) => {
       const result = await MinimalProgressCheck(params.userId);
       return result || [];
     },
-    delete: async (params: any) => {
+    delete: async (params: { 
+      moduleId: number; 
+      userId: string; 
+      currentCourse: string; 
+      currentModule: string;
+    }) => {
       return await MinimalProgressDelete(
         params.moduleId,
         params.userId,
@@ -101,7 +130,15 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.currentModule
       );
     },
-    insert: async (params: any) => {
+    insert: async (params: {
+      userId: string;
+      learningGoal: string;
+      currentCourse: string;
+      currentModule: string;
+      totalModulesInCourse: number;
+      isCompleted: boolean;
+      moduleId: number;
+    }) => {
       return await MinimalProgressInsert(
         params.userId,
         params.learningGoal,
@@ -111,14 +148,34 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.isCompleted,
         params.moduleId
       );
+    },
+    update: async (params: {
+      userId: string;
+      moduleId: number;
+      video_id: number;
+      current_video: string;
+      isCompleted: boolean;
+    }) => {
+      return await MinimalProgressUpdate({
+        userId: params.userId,
+        moduleId: params.moduleId,
+        video_id: params.video_id,
+        current_video: params.current_video,
+        isCompleted: params.isCompleted
+      });
     }
   },
   moderate: {
-    check: async (params: any) => {
+    check: async (params: { userId: string }) => {
       const result = await ModerateProgressCheck(params.userId);
       return result || [];
     },
-    delete: async (params: any) => {
+    delete: async (params: { 
+      moduleId: number; 
+      userId: string; 
+      currentCourse: string; 
+      currentModule: string;
+    }) => {
       return await ModerateProgressDelete(
         params.moduleId,
         params.userId,
@@ -126,7 +183,15 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.currentModule
       );
     },
-    insert: async (params: any) => {
+    insert: async (params: {
+      userId: string;
+      learningGoal: string;
+      currentCourse: string;
+      currentModule: string;
+      totalModulesInCourse: number;
+      isCompleted: boolean;
+      moduleId: number;
+    }) => {
       return await ModerateProgressInsert(
         params.userId,
         params.learningGoal,
@@ -136,14 +201,35 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.isCompleted,
         params.moduleId
       );
+    },
+    update: async (params: {
+      userId: string;
+      moduleId: number;
+      video_id: number;
+      current_video: string;
+      isCompleted: boolean;
+    }) => {
+      // Use MinimalProgressUpdate for moderate level as well
+      return await MinimalProgressUpdate({
+        userId: params.userId,
+        moduleId: params.moduleId,
+        video_id: params.video_id,
+        current_video: params.current_video,
+        isCompleted: params.isCompleted
+      });
     }
   },
   significant: {
-    check: async (params: any) => {
+    check: async (params: { userId: string }) => {
       const result = await SignificantProgressCheck(params.userId);
       return result || [];
     },
-    delete: async (params: any) => {
+    delete: async (params: { 
+      moduleId: number; 
+      userId: string; 
+      currentCourse: string; 
+      currentModule: string;
+    }) => {
       return await SignificantProgressDelete(
         params.moduleId,
         params.userId,
@@ -151,7 +237,15 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.currentModule
       );
     },
-    insert: async (params: any) => {
+    insert: async (params: {
+      userId: string;
+      learningGoal: string;
+      currentCourse: string;
+      currentModule: string;
+      totalModulesInCourse: number;
+      isCompleted: boolean;
+      moduleId: number;
+    }) => {
       return await SignificantProgressInsert(
         params.userId,
         params.learningGoal,
@@ -161,14 +255,35 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.isCompleted,
         params.moduleId
       );
+    },
+    update: async (params: {
+      userId: string;
+      moduleId: number;
+      video_id: number;
+      current_video: string;
+      isCompleted: boolean;
+    }) => {
+      // Use MinimalProgressUpdate for significant level as well
+      return await MinimalProgressUpdate({
+        userId: params.userId,
+        moduleId: params.moduleId,
+        video_id: params.video_id,
+        current_video: params.current_video,
+        isCompleted: params.isCompleted
+      });
     }
   },
   intensive: {
-    check: async (params: any) => {
+    check: async (params: { userId: string }) => {
       const result = await IntensiveProgressCheck(params.userId);
       return result || [];
     },
-    delete: async (params: any) => {
+    delete: async (params: { 
+      moduleId: number; 
+      userId: string; 
+      currentCourse: string; 
+      currentModule: string;
+    }) => {
       return await IntensiveProgressDelete(
         params.moduleId,
         params.userId,
@@ -176,7 +291,15 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.currentModule
       );
     },
-    insert: async (params: any) => {
+    insert: async (params: {
+      userId: string;
+      learningGoal: string;
+      currentCourse: string;
+      currentModule: string;
+      totalModulesInCourse: number;
+      isCompleted: boolean;
+      moduleId: number;
+    }) => {
       return await IntensiveProgressInsert(
         params.userId,
         params.learningGoal,
@@ -186,6 +309,22 @@ const progressFunctions: Record<TimeCommitmentLevel, Omit<ProgressFunctions, 'ge
         params.isCompleted,
         params.moduleId
       );
+    },
+    update: async (params: {
+      userId: string;
+      moduleId: number;
+      video_id: number;
+      current_video: string;
+      isCompleted: boolean;
+    }) => {
+      // Use MinimalProgressUpdate for intensive level as well
+      return await MinimalProgressUpdate({
+        userId: params.userId,
+        moduleId: params.moduleId,
+        video_id: params.video_id,
+        current_video: params.current_video,
+        isCompleted: params.isCompleted
+      });
     }
   },
 };
@@ -208,6 +347,12 @@ const courseDataMap: Record<string, CourseData> = {
   'deep-learning-tensorflow': deepLearningTensorflow,
 };
 
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_PROJECT_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 export const CourseDetailNew: React.FC = () => {
   const { courseSlug } = useParams<{ courseSlug: string }>();
   const courseId = courseSlug; // Use courseSlug as courseId for consistency
@@ -227,8 +372,69 @@ export const CourseDetailNew: React.FC = () => {
     }
     setUserId(storedUserId);
   }, []);
+
   const { data: onboardingData } = useSimpleOnboardingData(userId);
-  
+
+  // Enrollment hooks and logic
+  const [isEnrolled, setIsEnrolled] = useState<boolean>(false);
+  const [isEnrolling, setIsEnrolling] = useState<boolean>(false);
+
+  useEffect(() => {
+    async function checkEnrollment() {
+      if (!userId || !courseId) return;
+      // No RLS, so just check by userId and course title
+      const { data } = await supabase
+        .from('user_course_enrollments')
+        .select('clerk_user_id')
+        .eq('clerk_user_id', userId)
+        .eq('current_course', courseId)
+        .maybeSingle();
+      setIsEnrolled(!!data);
+      if (!data) {
+        setCompletedModules(new Set());
+        setCompletedVideos(new Set());
+        localStorage.removeItem(`courseProgress_${courseId}`);
+      }
+    }
+    if (userId && courseId) checkEnrollment();
+  }, [userId, courseId]);
+
+  const handleEnroll = async () => {
+    if (!userId || !courseId) return;
+    setIsEnrolling(true);
+    try {
+      const urlParams = new URLSearchParams(location.search);
+      const learningGoal = urlParams.get('goal') || onboardingData?.learning_goal || 'General Learning';
+      const currentPath = urlParams.get('path') || 'Frontend Fundamentals';
+      // No RLS, insert is unrestricted
+      const { error } = await supabase
+        .from('user_course_enrollments')
+        .insert({
+          clerk_user_id: userId,
+          learning_goal: learningGoal,
+          current_path: currentPath,
+          current_course: courseId,
+          total_modules_in_course: 0,
+          course_progress_in_percentage: 0
+        });
+      if (error) throw error;
+      setIsEnrolled(true);
+      toast({
+        title: 'Enrolled!',
+        description: `You are now enrolled in ${courseId}`,
+        variant: 'default' as const,
+      });
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: 'Could not enroll. Please try again.',
+        variant: 'destructive' as const,
+      });
+    } finally {
+      setIsEnrolling(false);
+    }
+  };
+
   // Get time commitment from URL or default to 'moderate'
   const timeCommitment = (new URLSearchParams(location.search).get('timeCommitment') || 'moderate') as TimeCommitmentLevel;
   
@@ -242,9 +448,35 @@ export const CourseDetailNew: React.FC = () => {
   // Get the current time commitment configuration
   const commitmentConfig = timeCommitmentConfig[timeCommitment];
   
-  // Get the progress functions for the current time commitment
-  // Get the progress functions for the current time commitment
-  const progressFunctionsForCommitment = progressFunctions[timeCommitment];
+    // Get the progress functions for the current time commitment
+  const progressFunctionsForCommitment = useMemo(() => {
+    const funcs = progressFunctions[timeCommitment];
+    return {
+      check: (params: { userId: string }) => funcs.check(params),
+      delete: (params: { 
+        moduleId: number; 
+        userId: string; 
+        currentCourse: string; 
+        currentModule: string;
+      }) => funcs.delete(params),
+      insert: (params: {
+        userId: string;
+        learningGoal: string;
+        currentCourse: string;
+        currentModule: string;
+        totalModulesInCourse: number;
+        isCompleted: boolean;
+        moduleId: number;
+      }) => funcs.insert(params),
+      update: (params: {
+        userId: string;
+        moduleId: number;
+        video_id: number;
+        current_video: string;
+        isCompleted: boolean;
+      }) => funcs.update(params)
+    };
+  }, [timeCommitment]);
 
   // Handle missing course ID
   useEffect(() => {
@@ -328,15 +560,39 @@ export const CourseDetailNew: React.FC = () => {
 
       try {
         const userProgress = await progressFunctionsForCommitment.check({ userId });
-        const completed = new Set<number>();
+        const completedModules = new Set<number>();
+        const completedVideos = new Set<string>();
 
+        // Process each progress record
         userProgress.forEach((progress: any) => {
-          if (progress.is_completed && progress.current_course === course?.title) {
-            completed.add(progress.module_id);
+          if (progress.current_course === course?.title) {
+            // Track completed modules
+            if (progress.is_completed) {
+              completedModules.add(progress.module_id);
+            }
+            
+            // Track completed videos
+            if (Array.isArray(progress.video_ids) && progress.video_ids.length > 0) {
+              // For each video ID in the array, construct the full video ID (e.g., 'html-1-1')
+              progress.video_ids.forEach((videoNum: number) => {
+                // Find the module
+                const module = course?.modules.find(m => m.id === progress.module_id);
+                if (module) {
+                  // Find the video with this number (assuming videoNum is the index + 1)
+                  const video = module.videos[videoNum - 1];
+                  if (video) {
+                    completedVideos.add(video.id);
+                  }
+                }
+              });
+            }
           }
         });
 
-        setCompletedModules(completed);
+        // Update both states
+        setCompletedModules(completedModules);
+        setCompletedVideos(completedVideos);
+        
       } catch (error) {
         console.error('Error loading user progress:', error);
         // Fallback to localStorage if database fails
@@ -355,7 +611,189 @@ export const CourseDetailNew: React.FC = () => {
     if (userId && course) {
       loadUserProgress();
     }
-  }, [userId, course, progressFunctionsForCommitment]);
+  }, [userId, course, progressFunctionsForCommitment, courseId]);
+
+  // Hydrate startedModules from DB/user progress on load
+  const [startedModules, setStartedModules] = useState<Record<number, { videoId: number, videoTitle: string, isCompleted: boolean }>>({});
+
+  useEffect(() => {
+    if (!userId || !courseId) return;
+    const fetchStartedModules = async () => {
+      try {
+        const userProgress = await progressFunctionsForCommitment.check({ userId });
+        const started = {};
+        userProgress.forEach(progress => {
+          started[progress.module_id] = {
+            videoId: progress.video_id ?? 0,
+            videoTitle: progress.current_video ?? 'no vids clicked',
+            isCompleted: !!progress.is_completed
+          };
+        });
+        setStartedModules(started);
+      } catch (e) {
+        // fallback: don't hydrate
+      }
+    };
+    fetchStartedModules();
+  }, [userId, courseId, progressFunctionsForCommitment]);
+
+  // Add function to start a module
+  const handleStartModule = async (moduleId: number) => {
+    if (!userId || !courseId || !course) return;
+    const currentModule = course.modules.find(m => m.id === moduleId);
+    const currentModuleTitle = currentModule?.title || `Module ${moduleId}`;
+    const courseTitle = course.title || courseId;
+    const urlParams = new URLSearchParams(location.search);
+    const learningGoal = urlParams.get('goal') || onboardingData?.learning_goal || 'General Learning';
+    const totalModulesInCourse = course.modules.length;
+    
+    try {
+      const insertResult = await progressFunctionsForCommitment.insert({
+        userId,
+        learningGoal,
+        currentCourse: courseTitle,
+        currentModule: currentModuleTitle,
+        totalModulesInCourse,
+        isCompleted: false,
+        moduleId
+      });
+      
+      if (insertResult?.success) {
+        setStartedModules(prev => ({ 
+          ...prev, 
+          [moduleId]: { 
+            videoId: 0, 
+            videoTitle: 'no vids clicked', 
+            isCompleted: false 
+          } 
+        }));
+      } else {
+        throw new Error(insertResult?.error || 'Failed to start module');
+      }
+    } catch (error) {
+      console.error('Error starting module:', error);
+      toast({ 
+        title: 'Error', 
+        description: error instanceof Error ? error.message : 'Failed to start module', 
+        variant: 'destructive' 
+      });
+    }
+  };
+
+  const handleVideoClick = async (videoId: string, moduleId: number, videoTitle: string) => {
+    if (!userId || !courseId || !course) return;
+    
+    try {
+      // Toggle the video completion state
+      const newCompletedVideos = new Set(completedVideos);
+      if (newCompletedVideos.has(videoId)) {
+        newCompletedVideos.delete(videoId); // Remove if already completed
+      } else {
+        newCompletedVideos.add(videoId); // Add if not completed
+      }
+      setCompletedVideos(newCompletedVideos);
+    
+      const module = course.modules.find(m => m.id === moduleId);
+      if (!module) {
+        throw new Error('Module not found');
+      }
+      
+      const allCompleted = module.videos.every(v => newCompletedVideos.has(v.id));
+      
+      // Update progress in the database
+      const updateResult = await MinimalProgressUpdate({
+        userId,
+        moduleId,
+        video_id: videoId, // Pass the raw videoId (e.g., 'html-1-1')
+        current_video: videoTitle,
+        isCompleted: allCompleted
+      });
+    
+      if (updateResult.success) {
+        // Calculate and update course progress
+        const allVideos = course.modules.flatMap(m => m.videos);
+        const totalVideos = allVideos.length;
+        const completedCount = Array.from(newCompletedVideos).filter(id => 
+          allVideos.some(v => v.id === id)
+        ).length;
+        
+        const newProgress = Math.min(100, Math.round((completedCount / totalVideos) * 100));
+    
+        // Update course enrollment progress
+        const { error: enrollmentError } = await supabase
+          .from('user_course_enrollments')
+          .update({ 
+            course_progress_in_percentage: newProgress
+          })
+          .eq('clerk_user_id', userId)
+          .eq('current_course', courseId);
+    
+        if (enrollmentError) {
+          console.error('Error updating course progress:', enrollmentError);
+          throw new Error('Failed to update course progress');
+        }
+        
+        // Update local state to reflect the change
+        setStartedModules(prev => ({
+          ...prev,
+          [moduleId]: {
+            ...(prev[moduleId] || {}),
+            videoId: parseInt(videoId, 10),
+            videoTitle,
+            isCompleted: allCompleted,
+            completedVideos: Array.from(newCompletedVideos)
+          }
+        }));
+        
+        // Show success toast
+        toast({
+          title: 'Progress saved',
+          description: `Watched: ${videoTitle}`,
+          variant: 'default'
+        });
+      } else {
+        throw new Error(updateResult.error || 'Failed to update progress');
+      }
+    } catch (error) {
+      console.error('Error in handleVideoClick:', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update video progress',
+        variant: 'destructive' as const,
+      });
+    }
+  };
+
+  // Calculate progress for a specific module
+  const moduleProgress = (moduleId: number): number => {
+    if (!course) return 0;
+    
+    const module = course.modules.find(m => m.id === moduleId);
+    if (!module) return 0;
+    
+    // If module has no videos, check if it's marked as completed
+    if (!module.videos || module.videos.length === 0) {
+      return completedModules.has(moduleId) ? 100 : 0;
+    }
+    
+    // Calculate progress based on completed videos
+    const completedVideosCount = module.videos.filter(v => completedVideos.has(v.id)).length;
+    return Math.round((completedVideosCount / module.videos.length) * 100);
+  };
+
+  // Function to map color to badge variant
+  const getBadgeColor = (color: string): 'default' | 'amber' | 'purple' => {
+    switch (color) {
+      case 'orange':
+      case 'default':
+        return 'default';
+      case 'amber':
+      case 'purple':
+        return color;
+      default:
+        return 'default';
+    }
+  };
 
   // Calculate progress percentage based on individual video completion
   const progress = useMemo(() => {
@@ -369,7 +807,7 @@ export const CourseDetailNew: React.FC = () => {
     course.modules.forEach(module => {
       if (module.videos && module.videos.length > 0) {
         totalVideos += module.videos.length;
-        const moduleCompletedVideos = module.videos.filter(video =>
+        const moduleCompletedVideos = module.videos.filter(video => 
           completedVideos.has(video.id)
         ).length;
         completedVideoCount += moduleCompletedVideos;
@@ -465,96 +903,101 @@ export const CourseDetailNew: React.FC = () => {
     });
   };
 
-  const toggleVideoCompletion = (videoId: string, moduleId: number) => {
-    setCompletedVideos(prev => {
-      const newCompleted = new Set(prev);
-      if (newCompleted.has(videoId)) {
-        newCompleted.delete(videoId);
-      } else {
-        newCompleted.add(videoId);
-      }
-
-      // Update module completion based on video completion
-      if (course) {
-        const module = course.modules.find(m => m.id === moduleId);
-        if (module && module.videos) {
-          const completedCount = module.videos.filter(video =>
-            newCompleted.has(video.id) || video.id === videoId
-          ).length;
-          const isModuleComplete = completedCount === module.videos.length;
-
-          setCompletedModules(prevModules => {
-            const newModules = new Set(prevModules);
-            if (isModuleComplete) {
-              newModules.add(moduleId);
-            } else {
-              newModules.delete(moduleId);
-            }
-
-            // Save progress to localStorage immediately
-            const progressData = {
-              courseId,
-              modules: Array.from(newModules).map(id => ({ id, completed: true })),
-              videos: Array.from(newCompleted).map(id => ({ id, completed: true }))
-            };
-            localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
-
-            return newModules;
-          });
-        }
-      }
-
-      return newCompleted;
-    });
-  };
-
-  const getModuleProgress = (moduleId: number) => {
-    if (!course) return 0;
-    const module = course.modules.find(m => m.id === moduleId);
-    if (!module || !module.videos || module.videos.length === 0) {
-      return completedModules.has(moduleId) ? 100 : 0;
+  const toggleVideoCompletion = async (videoId: string, moduleId: number) => {
+    // Compute new completed videos set
+    const newCompletedVideos = new Set(completedVideos);
+    if (newCompletedVideos.has(videoId)) {
+      newCompletedVideos.delete(videoId);
+    } else {
+      newCompletedVideos.add(videoId);
     }
 
-    const completedCount = module.videos.filter(video =>
-      completedVideos.has(video.id)
-    ).length;
+    // Update module completion based on video completion
+    let newCompletedModules = new Set(completedModules);
+    if (course) {
+      const module = course.modules.find(m => m.id === moduleId);
+      if (module && module.videos) {
+        const completedCount = module.videos.filter(video => newCompletedVideos.has(video.id)).length;
+        const isModuleComplete = completedCount === module.videos.length;
+        if (isModuleComplete) {
+          newCompletedModules.add(moduleId);
+        } else {
+          newCompletedModules.delete(moduleId);
+        }
+      }
+    }
 
-    return Math.round((completedCount / module.videos.length) * 100);
+    // Calculate new progress percentage
+    let totalVideos = 0;
+    let completedVideoCount = 0;
+    let totalModulesWithoutVideos = 0;
+    let completedModulesWithoutVideos = 0;
+    if (course) {
+      course.modules.forEach(module => {
+        if (module.videos && module.videos.length > 0) {
+          totalVideos += module.videos.length;
+          const moduleCompletedVideos = module.videos.filter(video => newCompletedVideos.has(video.id)).length;
+          completedVideoCount += moduleCompletedVideos;
+        } else {
+          totalModulesWithoutVideos++;
+          if (newCompletedModules.has(module.id)) {
+            completedModulesWithoutVideos++;
+          }
+        }
+      });
+    }
+    let newProgress = 0;
+    if (totalVideos > 0) {
+      const videoProgress = totalVideos > 0 ? (completedVideoCount / totalVideos) : 0;
+      const moduleProgress = totalModulesWithoutVideos > 0 ? (completedModulesWithoutVideos / totalModulesWithoutVideos) : 0;
+      const videoWeight = totalVideos / (totalVideos + totalModulesWithoutVideos);
+      const moduleWeight = 1 - videoWeight;
+      newProgress = Math.round((videoProgress * videoWeight + moduleProgress * moduleWeight) * 100);
+    } else if (course) {
+      newProgress = Math.round((newCompletedModules.size / course.modules.length) * 100);
+    }
+
+    // Update DB first
+    await supabase
+      .from('user_course_enrollments')
+      .update({ course_progress_in_percentage: newProgress })
+      .eq('clerk_user_id', userId)
+      .eq('current_course', courseId);
+
+    // Now update UI state
+    setCompletedVideos(newCompletedVideos);
+    setCompletedModules(newCompletedModules);
+    const progressData = {
+      courseId,
+      modules: Array.from(newCompletedModules).map(id => ({ id, completed: true })),
+      videos: Array.from(newCompletedVideos).map(id => ({ id, completed: true }))
+    };
+    localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
   };
 
   const toggleModuleCompletion = async (moduleId: number) => {
     if (!userId || !courseId || !course) return;
-
     try {
       const isCurrentlyCompleted = completedModules.has(moduleId);
       const newCompletedModules = new Set(completedModules);
       const currentModule = course.modules.find(m => m.id === moduleId);
-
-      // Prepare common parameters
       const currentModuleTitle = currentModule?.title || `Module ${moduleId}`;
       const courseTitle = course.title || courseId;
-
-      // Get learning goal from URL parameters first, then fallback to onboarding data
       const urlParams = new URLSearchParams(location.search);
       const learningGoal = urlParams.get('goal') || onboardingData?.learning_goal || 'General Learning';
-
       if (isCurrentlyCompleted) {
-        // Delete the progress record for this module
         const deleteResult = await progressFunctionsForCommitment.delete({
           moduleId,
           userId,
           currentCourse: courseTitle,
           currentModule: currentModuleTitle
         });
-
         if (deleteResult.success) {
           newCompletedModules.delete(moduleId);
-          console.log(`Module ${moduleId} unmarked as completed`);
         } else {
           throw new Error(deleteResult.error || 'Failed to delete progress');
         }
       } else {
-        // Insert new progress record
         const insertResult = await progressFunctionsForCommitment.insert({
           userId,
           learningGoal,
@@ -564,34 +1007,59 @@ export const CourseDetailNew: React.FC = () => {
           isCompleted: true,
           moduleId
         });
-
         if (insertResult.success) {
           newCompletedModules.add(moduleId);
-          console.log(`Module ${moduleId} marked as completed`);
         } else {
           throw new Error(insertResult.error || 'Failed to insert progress');
         }
       }
-
-      // Update the UI state
+      // Calculate new progress percentage
+      let totalVideos = 0;
+      let completedVideoCount = 0;
+      let totalModulesWithoutVideos = 0;
+      let completedModulesWithoutVideos = 0;
+      course.modules.forEach(module => {
+        if (module.videos && module.videos.length > 0) {
+          totalVideos += module.videos.length;
+          const moduleCompletedVideos = module.videos.filter(video => completedVideos.has(video.id)).length;
+          completedVideoCount += moduleCompletedVideos;
+        } else {
+          totalModulesWithoutVideos++;
+          if (newCompletedModules.has(module.id)) {
+            completedModulesWithoutVideos++;
+          }
+        }
+      });
+      let newProgress = 0;
+      if (totalVideos > 0) {
+        const videoProgress = totalVideos > 0 ? (completedVideoCount / totalVideos) : 0;
+        const moduleProgress = totalModulesWithoutVideos > 0 ? (completedModulesWithoutVideos / totalModulesWithoutVideos) : 0;
+        const videoWeight = totalVideos / (totalVideos + totalModulesWithoutVideos);
+        const moduleWeight = 1 - videoWeight;
+        newProgress = Math.round((videoProgress * videoWeight + moduleProgress * moduleWeight) * 100);
+      } else {
+        newProgress = Math.round((newCompletedModules.size / course.modules.length) * 100);
+      }
+      // Update DB first
+      await supabase
+        .from('user_course_enrollments')
+        .update({ course_progress_in_percentage: newProgress })
+        .eq('clerk_user_id', userId)
+        .eq('current_course', courseId);
+      // Now update UI state
       setCompletedModules(newCompletedModules);
-
-      // Save progress to localStorage as backup
       const progressData = {
         courseId,
         modules: Array.from(newCompletedModules).map(id => ({ id, completed: true })),
         videos: Array.from(completedVideos).map(id => ({ id, completed: true }))
       };
       localStorage.setItem(`courseProgress_${courseId}`, JSON.stringify(progressData));
-
     } catch (error) {
-      console.error('Error in toggleModuleCompletion:', error);
       toast({
         title: 'Error',
         description: 'Failed to update module progress. Please try again.',
         variant: 'destructive'
       });
-      // Don't revert UI state on error - let user try again
     }
   };
 
@@ -657,10 +1125,15 @@ export const CourseDetailNew: React.FC = () => {
             </div>
 
             <div className="lg:text-right">
-              <Badge className={`mb-4 bg-gradient-to-r ${commitmentConfig.badge.color === 'green' ? 'from-green-500 to-emerald-500' :
-                commitmentConfig.badge.color === 'blue' ? 'from-blue-500 to-cyan-500' :
-                commitmentConfig.badge.color === 'orange' ? 'from-orange-500 to-red-500' :
-                'from-purple-500 to-pink-500'} text-white border-0 px-4 py-2 text-sm font-medium`}>
+              <Badge className={`mb-4 bg-gradient-to-r ${
+                commitmentConfig.badge.color === 'green' 
+                  ? 'from-green-500 to-emerald-500' 
+                  : commitmentConfig.badge.color === 'blue' 
+                    ? 'from-blue-500 to-cyan-500' 
+                    : commitmentConfig.badge.color === 'purple' 
+                      ? 'from-purple-500 to-pink-500' 
+                      : 'from-amber-500 to-orange-500' // Handle all other cases including 'amber' and 'orange'
+              } text-white border-0 px-4 py-2 text-sm font-medium`}>
                 {commitmentConfig.name}
               </Badge>
 
@@ -707,221 +1180,216 @@ export const CourseDetailNew: React.FC = () => {
           </p>
         </div>
 
-        {course?.modules?.length > 0 ? (
-          <div className="grid gap-6 max-w-4xl mx-auto">
-            {course.modules.map((module, index) => {
-              const isCompleted = completedModules.has(module.id);
-              const isExpanded = expandedModules.has(module.id);
-              const moduleProgress = getModuleProgress(module.id);
+        {!isEnrolled ? (
+          <div className="text-center py-12">
+            <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden p-8">
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                Start Learning {course.title}
+              </h2>
+              <p className="text-lg text-slate-600 mb-8">
+                Enroll for free to access all course content, track your progress, and earn a certificate upon completion.
+              </p>
+              <Button 
+                onClick={handleEnroll}
+                disabled={isEnrolling}
+                size="lg"
+                className="px-8 py-6 text-lg font-semibold"
+              >
+                {isEnrolling ? 'Enrolling...' : 'Enroll for Free'}
+              </Button>
+              <p className="text-sm text-slate-500 mt-4">
+                Join {Math.floor(Math.random() * 5000) + 1000}+ students already enrolled
+              </p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {course?.modules?.length > 0 ? (
+              <div className="grid gap-6 max-w-4xl mx-auto">
+                {course.modules.map((module, index) => {
+                  const isCompleted = completedModules.has(module.id);
+                  const isExpanded = expandedModules.has(module.id);
+                  const moduleProgressValue = moduleProgress(module.id);
+                  const isStarted = startedModules[module.id];
 
-              return (
-                <Card
-                  key={module.id}
-                  className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-l-4 ${
-                    isCompleted
-                      ? 'border-l-green-500 bg-gradient-to-r from-green-50 to-white'
-                      : 'border-l-blue-500 bg-gradient-to-r from-blue-50 to-white hover:from-blue-100'
-                  }`}
-                >
-                  {/* Module Number Badge */}
-                  <div className={`absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                    isCompleted ? 'bg-green-500' : 'bg-blue-500'
-                  }`}>
-                    {isCompleted ? <Check className="h-5 w-5" /> : index + 1}
-                  </div>
-
-                  <CardHeader className="pb-4 pl-20">
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
-                            {module.title}
-                          </CardTitle>
-                          {module.videos && module.videos.length > 0 && (
-                            <Collapsible>
-                              <CollapsibleTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => toggleModuleExpansion(module.id)}
-                                  className="p-1 h-6 w-6 rounded-full hover:bg-slate-200"
-                                >
-                                  {isExpanded ? (
-                                    <ChevronDown className="h-4 w-4" />
-                                  ) : (
-                                    <ChevronRight className="h-4 w-4" />
-                                  )}
-                                </Button>
-                              </CollapsibleTrigger>
-                            </Collapsible>
-                          )}
-                        </div>
-                        <p className="text-slate-600 leading-relaxed mb-2">{module.description}</p>
-
-                        {/* Module Progress Bar */}
-                        {module.videos && module.videos.length > 0 && (
-                          <div className="mb-2">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs text-slate-500">Progress:</span>
-                              <span className="text-xs font-semibold text-slate-700">{moduleProgress}%</span>
-                            </div>
-                            <Progress value={moduleProgress} className="h-2 bg-slate-200" />
-                          </div>
-                        )}
+                  return (
+                    <Card
+                      key={module.id}
+                      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-l-4 ${
+                        isCompleted
+                          ? 'border-l-green-500 bg-gradient-to-r from-green-50 to-white'
+                          : 'border-l-blue-500 bg-gradient-to-r from-blue-50 to-white hover:from-blue-100'
+                      }`}
+                    >
+                      {/* Module Number Badge */}
+                      <div className={`absolute top-4 left-4 w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                        isCompleted ? 'bg-green-500' : 'bg-blue-500'
+                      }`}>
+                        {isCompleted ? <Check className="h-5 w-5" /> : index + 1}
                       </div>
 
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 text-slate-500">
-                          <Clock className="h-4 w-4" />
-                          <span className="text-sm font-medium">{module.duration}</span>
-                        </div>
-
-                        <Button
-                          variant={isCompleted ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => toggleModuleCompletion(module.id)}
-                          className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
-                            isCompleted
-                              ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
-                              : 'border-2 border-slate-300 hover:border-green-500 hover:bg-green-50'
-                          }`}
-                        >
-                          <Check className={`h-5 w-5 transition-all duration-300 ${
-                            isCompleted ? 'text-white' : 'text-slate-400 group-hover:text-green-500'
-                          }`} />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="pl-20 pt-0">
-                    {/* Topics */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {module.topics?.map((topic, topicIndex) => (
-                        <Badge
-                          key={topicIndex}
-                          variant="secondary"
-                          className="text-xs px-3 py-1 bg-white/70 text-slate-700 border border-slate-200 hover:bg-slate-100 transition-colors"
-                        >
-                          {topic}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Video List Dropdown */}
-                    {module.videos && module.videos.length > 0 && (
-                      <Collapsible open={isExpanded} onOpenChange={() => toggleModuleExpansion(module.id)}>
-                        <CollapsibleContent className="space-y-2 mb-4">
-                          <div className="bg-slate-50 rounded-lg p-4 border">
-                            <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
-                              <PlayCircle className="h-4 w-4" />
-                              Videos in this module ({module.videos.length})
-                            </h4>
-                            <div className="space-y-2">
-                              {module.videos.map((video, videoIndex) => {
-                                const isVideoCompleted = completedVideos.has(video.id);
-                                return (
-                                  <div
-                                    key={video.id}
-                                    className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
-                                      isVideoCompleted
-                                        ? 'bg-green-50 border-green-200'
-                                        : 'bg-white border-slate-200 hover:border-slate-300'
-                                    }`}
-                                  >
-                                    <Checkbox
-                                      checked={isVideoCompleted}
-                                      onCheckedChange={() => toggleVideoCompletion(video.id, module.id)}
-                                      className="h-4 w-4"
-                                    />
-
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2">
-                                        <span className={`text-sm font-medium ${
-                                          isVideoCompleted ? 'text-green-700 line-through' : 'text-slate-900'
-                                        }`}>
-                                          {videoIndex + 1}. {video.title}
-                                        </span>
-                                        {isVideoCompleted && (
-                                          <Check className="h-4 w-4 text-green-500" />
-                                        )}
-                                      </div>
-                                      <div className="flex items-center gap-2 mt-1">
-                                        <Clock className="h-3 w-3 text-slate-400" />
-                                        <span className="text-xs text-slate-500">{video.duration}</span>
-                                      </div>
-                                    </div>
-
+                      <CardHeader className="pb-4 pl-20">
+                        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CardTitle className="text-xl font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                                {module.title}
+                              </CardTitle>
+                              {module.videos && module.videos.length > 0 && (
+                                <Collapsible>
+                                  <CollapsibleTrigger asChild>
                                     <Button
                                       variant="ghost"
                                       size="sm"
-                                      onClick={() => window.open(video.videoUrl, '_blank')}
-                                      className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50"
+                                      onClick={() => toggleModuleExpansion(module.id)}
+                                      className="p-1 h-6 w-6 rounded-full hover:bg-slate-200"
                                     >
-                                      <Play className="h-3 w-3" />
+                                      {isExpanded ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4" />
+                                      )}
                                     </Button>
-                                  </div>
-                                );
-                              })}
+                                  </CollapsibleTrigger>
+                                </Collapsible>
+                              )}
                             </div>
+                            <p className="text-slate-600 leading-relaxed mb-2">{module.description}</p>
+
+                            {/* Module Progress Bar */}
+                            {module.videos && module.videos.length > 0 && (
+                              <div className="mb-2">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <span className="text-xs text-slate-500">Progress:</span>
+                                  <span className="text-xs font-semibold text-slate-700">{moduleProgressValue}%</span>
+                                </div>
+                                <Progress value={moduleProgressValue} className="h-2 bg-slate-200" />
+                              </div>
+                            )}
                           </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
 
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-3">
-                      {module.playlistUrl && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="bg-white hover:bg-red-50 border-red-200 text-red-600 hover:text-red-700 hover:border-red-300 transition-all duration-300"
-                          onClick={() => window.open(module.playlistUrl, '_blank')}
-                        >
-                          <Youtube className="mr-2 h-4 w-4" />
-                          Watch Playlist
-                        </Button>
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 text-slate-500">
+                              <Clock className="h-4 w-4" />
+                              <span className="text-sm font-medium">{module.duration}</span>
+                            </div>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => toggleModuleCompletion(module.id)}
+                              className={`h-10 w-10 p-0 rounded-full transition-all duration-300 ${
+                                isCompleted
+                                  ? 'bg-green-500 hover:bg-green-600 text-white shadow-lg'
+                                  : 'border-2 border-slate-300 hover:border-green-500 hover:bg-green-50'
+                              }`}
+                            >
+                              <Check className={`h-5 w-5 transition-all duration-300 ${
+                                isCompleted ? 'text-white' : 'text-slate-400 group-hover:text-green-500'
+                              }`} />
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="pl-20 pt-0">
+                        {/* Topics */}
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {module.topics?.map((topic, topicIndex) => (
+                            <Badge
+                              key={topicIndex}
+                              variant="secondary"
+                              className="text-xs px-3 py-1 bg-white/70 text-slate-700 border border-slate-200 hover:bg-slate-100 transition-colors"
+                            >
+                              {topic}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        {/* Start Module Button or Video List */}
+                        {!isStarted ? (
+                          <Button onClick={() => handleStartModule(module.id)} variant="default">Start Module</Button>
+                        ) : (
+                          module.videos && module.videos.length > 0 && (
+                            <Collapsible open={isExpanded} onOpenChange={() => toggleModuleExpansion(module.id)}>
+                              <CollapsibleContent className="space-y-2 mb-4">
+                                <div className="bg-slate-50 rounded-lg p-4 border">
+                                  <h4 className="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+                                    <PlayCircle className="h-4 w-4" />
+                                    Videos in this module ({module.videos.length})
+                                  </h4>
+                                  <div className="space-y-2">
+                                    {module.videos.map((video, videoIndex) => {
+                                      const isVideoCompleted = completedVideos.has(video.id);
+                                      return (
+                                        <div
+                                          key={video.id}
+                                          className={`flex items-center gap-3 p-3 rounded-lg border transition-all duration-200 ${
+                                            isVideoCompleted
+                                              ? 'bg-green-50 border-green-200'
+                                              : 'bg-white border-slate-200 hover:border-slate-300'
+                                          }`}
+                                        >
+                                          <Checkbox
+                                            checked={isVideoCompleted}
+                                            onCheckedChange={() => handleVideoClick(video.id, module.id, video.title)}
+                                            className="h-4 w-4"
+                                          />
+
+                                          <div className="flex-1">
+                                            <div className="flex items-center gap-2">
+                                              <span className={`text-sm font-medium ${
+                                                isVideoCompleted ? 'text-green-700 line-through' : 'text-slate-900'
+                                              }`}>
+                                                {videoIndex + 1}. {video.title}
+                                              </span>
+                                              {isVideoCompleted && (
+                                                <Check className="h-4 w-4 text-green-500" />
+                                              )}
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-1">
+                                              <Clock className="h-3 w-3 text-slate-400" />
+                                              <span className="text-xs text-slate-500">{video.duration}</span>
+                                            </div>
+                                          </div>
+
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => window.open(video.videoUrl, '_blank')}
+                                            className="h-8 w-8 p-0 rounded-full text-slate-500 hover:text-red-600 hover:bg-red-50"
+                                          >
+                                            <Play className="h-3 w-3" />
+                                          </Button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </CollapsibleContent>
+                            </Collapsible>
+                          )
+                        )}
+                      </CardContent>
+
+                      {/* Completion indicator line */}
+                      {isCompleted && (
+                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-600"></div>
                       )}
-
-                      {module.videos && module.videos.length > 0 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => toggleModuleExpansion(module.id)}
-                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50"
-                        >
-                          {isExpanded ? (
-                            <>
-                              <ChevronDown className="mr-2 h-4 w-4" />
-                              Hide Videos
-                            </>
-                          ) : (
-                            <>
-                              <ChevronRight className="mr-2 h-4 w-4" />
-                              Show Videos ({module.videos.length})
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-
-                  {/* Completion indicator line */}
-                  {isCompleted && (
-                    <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-green-400 to-green-600"></div>
-                  )}
-                </Card>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
-              <BookOpen className="h-8 w-8 text-slate-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-slate-900 mb-2">No modules available</h3>
-            <p className="text-slate-600">This course content is being prepared. Check back soon!</p>
-          </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 mx-auto mb-4 bg-slate-100 rounded-full flex items-center justify-center">
+                  <BookOpen className="h-8 w-8 text-slate-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-slate-900 mb-2">No modules available</h3>
+                <p className="text-slate-600">This course content is being prepared. Check back soon!</p>
+              </div>
+            )}
+          </>
         )}
 
         {/* Course Stats */}
