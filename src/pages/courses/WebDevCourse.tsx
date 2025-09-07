@@ -5,9 +5,8 @@ import Footer from '@/components/layout/Footer';
 import CourseModule, { CourseModuleProps } from '@/components/course/CourseModule';
 
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { useUserData } from '@/hooks/useUserData';
-import { useCourseProgress } from '@/hooks/useCourseProgress';
+import { useToast } from '@/components/ui/use-toast';
+// UI-only: Remove useUserData and useCourseProgress, use local state instead
 import { 
   ChevronLeft, 
   PlayCircle, 
@@ -162,14 +161,13 @@ const getWebDevModules = (timeCommitment: string, experienceLevel: string) => {
 const WEBDEV_COURSE_ID = 'e6904d1a-5748-4524-9535-7955a368e5cb';
 
 const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCourseProps) => {
-  const { awardPoints, deductPoints } = useUserData();
+  const userData = useUserData();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { markVideoComplete, markVideoIncomplete, updateCourseProgress } = useCourseProgress();
-  
+  // Use local completed videos state only
+  const [completedVideos, setCompletedVideos] = useState<string[]>([]);
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
   const [currentVideoTitle, setCurrentVideoTitle] = useState<string>('');
-  const [completedVideos, setCompletedVideos] = useState<string[]>([]);
   const [completedProjects, setCompletedProjects] = useState<string[]>([]);
   const [currentModuleIndex, setCurrentModuleIndex] = useState<number>(0);
   
@@ -201,25 +199,6 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
     setOverallProgress(calculateOverallProgress());
   }, [completedVideos]);
 
-  useEffect(() => {
-    if (courseId && overallProgress > 0) {
-      updateCourseProgress(courseId, overallProgress);
-    }
-  }, [overallProgress, updateCourseProgress, courseId]);
-  
-  useEffect(() => {
-    const key = `webdev_completedVideos_${timeCommitment}_${experienceLevel}`;
-    const stored = localStorage.getItem(key);
-    if (stored) {
-      setCompletedVideos(JSON.parse(stored));
-    }
-    
-  }, []);
-  
-  useEffect(() => {
-    const key = `webdev_completedVideos_${timeCommitment}_${experienceLevel}`;
-    localStorage.setItem(key, JSON.stringify(completedVideos));
-  }, [completedVideos, timeCommitment, experienceLevel]);
   
   const handleVideoSelect = (videoId: string) => {
     setSelectedVideoId(videoId);
@@ -238,21 +217,20 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
   const handleToggleComplete = (videoId: string) => {
     setCompletedVideos(prev => {
       if (prev.includes(videoId)) {
-        // Mark as incomplete and deduct points via backend
-        markVideoIncomplete(videoId, WEBDEV_COURSE_ID, modules[currentModuleIndex]?.id || '');
+        toast({
+          title: "Lesson marked as incomplete",
+          description: "You can revisit this lesson anytime.",
+          variant: "default",
+        });
         return prev.filter(id => id !== videoId);
       } else {
-        // Mark as complete and award points via backend
-        markVideoComplete(videoId, WEBDEV_COURSE_ID, modules[currentModuleIndex]?.id || '');
+        toast({
+          title: "Lesson completed!",
+          description: "Great job! Keep up the good work.",
+          variant: "default",
+        });
         return [...prev, videoId];
       }
-    });
-    toast({
-      title: completedVideos.includes(videoId) ? "Lesson marked as incomplete" : "Lesson completed!",
-      description: completedVideos.includes(videoId) 
-        ? "You can revisit this lesson anytime." 
-        : "Great job! Keep up the good work.",
-      variant: completedVideos.includes(videoId) ? "default" : "default",
     });
   };
 
@@ -260,7 +238,7 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
   const handleCertification = () => {
     if (!completedProjects.includes('certification')) {
       setCompletedProjects(prev => [...prev, 'certification']);
-      awardPoints(5, 'Completed certification exam');
+
       toast({
         title: "Project completed!",
         description: "You earned a reward for completing the certification exam!",
@@ -278,6 +256,14 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
     }
   };
 
+  // Calculate completed modules
+  const completedModules = modules.filter(module =>
+    module.subModules.every(subModule =>
+      subModule.videos.every(video => completedVideos.includes(video.id))
+    )
+  ).length;
+  const totalModules = modules.length;
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <RouterHeader />
@@ -294,6 +280,10 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
                     <ChevronLeft className="h-4 w-4" />
                   </button>
                   <span className="text-sm font-medium">Back to Dashboard</span>
+                </div>
+                {/* Module Tracker */}
+                <div className="mb-2 text-sm font-semibold text-white/90">
+                  {`${completedModules}/${totalModules} modules completed`}
                 </div>
                 <h1 className="text-3xl font-bold">Web Development Fundamentals</h1>
                 <div className="flex flex-wrap items-center gap-3 mt-2">
@@ -377,16 +367,15 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
                           <p className="text-white">{currentVideoTitle}</p>
                         </div>
                       </div>
-                      
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-70"></div>
                     </div>
                     <div className="p-6">
                       <div className="flex items-center justify-between mb-4">
                         <h2 className="text-xl font-medium">{currentVideoTitle}</h2>
                         <div className="flex items-center gap-2">
-                          <Button 
-                            variant={completedVideos.includes(selectedVideoId) ? "default" : "outline"} 
-                            size="sm" 
+                          <Button
+                            variant={completedVideos.includes(selectedVideoId) ? "default" : "outline"}
+                            size="sm"
                             onClick={() => handleToggleComplete(selectedVideoId)}
                             className="gap-2"
                           >
@@ -395,7 +384,6 @@ const WebDevCourse = ({ courseId, timeCommitment, experienceLevel }: WebDevCours
                           </Button>
                         </div>
                       </div>
-                      
                       <p className="text-muted-foreground mt-2 mb-4">
                         This lesson is tailored for {experienceLevel} level learners with a {timeCommitment} time commitment.
                       </p>

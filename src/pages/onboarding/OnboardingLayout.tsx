@@ -1,29 +1,36 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useCallback } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import RouterHeader from "@/components/layout/RouterHeader";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { useEnsureUserProfile } from "@/hooks/useEnsureUserProfile";
-import { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/integrations/supabase/types";
-import { useSupabaseClient } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
-import { useCourseProgress } from '@/hooks/useCourseProgress';
+import { ArrowLeft, ArrowRight, Sparkles, Trophy, Target } from "lucide-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
+import OnboardingCheck from "@/components/database/onboarding/OnboardingCheck";
+import OnboardingInsert from "@/components/database/onboarding/OnboardingInsert";
 
 // Define the onboarding steps in order
 const ONBOARDING_STEPS = [
-  { path: "/onboarding", label: "Learning Goals", dataKey: "learning_goal" },
+  {
+    path: "/onboarding",
+    label: "Learning Goals",
+    dataKey: "learning_goal",
+    icon: Target,
+    description: "What excites you to learn?",
+  },
   {
     path: "/onboarding/time",
     label: "Time Commitment",
     dataKey: "time_commitment",
+    icon: Sparkles,
+    description: "How much time can you invest?",
   },
   {
     path: "/onboarding/experience",
     label: "Experience Level",
     dataKey: "experience_level",
+    icon: Trophy,
+    description: "Where are you starting from?",
   },
 ];
 
@@ -40,7 +47,7 @@ type OnboardingContextType = {
 };
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const useOnboarding = () => {
@@ -51,27 +58,21 @@ export const useOnboarding = () => {
   return context;
 };
 
-type OnboardingLayoutProps = {
-  supabase: SupabaseClient<Database>;
-};
+type OnboardingLayoutProps = {};
 
-const OnboardingLayout = ({ supabase }: OnboardingLayoutProps) => {
-  useEnsureUserProfile(supabase);
+const OnboardingLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
   const { user } = useUser();
-  const { enrollInCourse } = useCourseProgress();
-
-  console.log("user", user);
+  const { isSignedIn, userId, getToken } = useAuth();
 
   const [onboardingData, setOnboardingData] = useState<Record<string, any>>({});
-
-  const supabaseClient = useSupabaseClient();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Determine current step index
   const currentStepIndex = ONBOARDING_STEPS.findIndex(
-    (step) => step.path === location.pathname
+    (step) => step.path === location.pathname,
   );
   const isLastStep = currentStepIndex === ONBOARDING_STEPS.length - 1;
   const isFirstStep = currentStepIndex === 0;
@@ -82,62 +83,91 @@ const OnboardingLayout = ({ supabase }: OnboardingLayoutProps) => {
     ? !!onboardingData[currentStep.dataKey]
     : false;
 
-  const updateOnboardingData = async (key: string, value: any) => {
+  const updateOnboardingData = (key: string, value: any) => {
     setOnboardingData((prev) => ({ ...prev, [key]: value }));
-    const { data, error } = await supabaseClient
-      .from("user_profiles")
-      .update({
-        [key]: value,
-      })
-      .eq("clerk_user_id", user?.id);
-
-    supabaseClient.from("user_profiles").select("*");
   };
 
-  const generateCourseRoute = (
-    learningGoal: string,
-    timeCommitment: string,
-    experienceLevel: string
-  ) => {
-    return `/courses/${learningGoal}/${timeCommitment}/${experienceLevel}`;
-  };
+  const handleSaveOnboardingData = useCallback(async () => {
+    if (!userId || !isSignedIn) {
+      setError("User not authenticated");
+      return false;
+    }
 
-  const goToNextStep = () => {
+    const { learning_goal, time_commitment, experience_level } = onboardingData;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // First check if the user already has onboarding data
+      const checkResult = await OnboardingCheck(
+        getToken,
+        userId,
+        learning_goal,
+        time_commitment,
+        experience_level
+      );
+
+      if (checkResult.error) {
+        throw checkResult.error;
+      }
+
+      if (!checkResult.exists) {
+        // If no existing data, insert new record
+        const insertResult = await OnboardingInsert(getToken, {
+          clerk_user_id: userId,
+          learning_goal,
+          time_commitment,
+          experience_level,
+        });
+
+        if (!insertResult.success) {
+          throw insertResult.error || new Error("Failed to save onboarding data");
+        }
+      } else if (checkResult.needsUpdate) {
+        // Data exists and was updated, we can use checkResult.data
+        console.log("Onboarding data updated");
+      } else {
+        // Data exists and is up to date
+        console.log("Onboarding data is up to date");
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Error saving onboarding data:", error);
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [onboardingData, userId, isSignedIn, getToken]);
+
+  const goToNextStep = useCallback(async () => {
     if (!canContinue) return;
 
     if (isLastStep) {
-      // If this is the last step, finish onboarding and navigate to specific course path
-      const { learning_goal, time_commitment, experience_level } = onboardingData;
-      // Map learning_goal to courseId
-      const courseIdMap = {
-        'coding': '1',
-        'design': '2',
-        'data': '3',
-        'gaming': '4',
-        'media': '5',
-        'personal': '6',
-      };
-      const courseId = courseIdMap[learning_goal];
-      if (courseId && time_commitment && experience_level) {
-        enrollInCourse(courseId, time_commitment, experience_level);
-        const coursePath = generateCourseRoute(learning_goal, time_commitment, experience_level);
-        console.log('Onboarding complete with data:', onboardingData);
-        console.log('Enrolling in course:', { courseId, time_commitment, experience_level });
-        console.log('Navigating to course path:', coursePath);
-        navigate(coursePath);
-        return;
+      // On the last step, save the data before proceeding
+      const success = await handleSaveOnboardingData();
+      if (success) {
+        navigate(`/personalizing/${onboardingData.learning_goal}/${onboardingData.time_commitment}/${onboardingData.experience_level}`);
+      }
+    } else {
+      const nextStep = ONBOARDING_STEPS[currentStepIndex + 1];
+      if (nextStep) {
+        navigate(nextStep.path);
       }
     }
-    // Otherwise, move to the next step
-    navigate(ONBOARDING_STEPS[currentStepIndex + 1].path);
-  };
+  }, [canContinue, currentStepIndex, isLastStep, navigate, onboardingData, handleSaveOnboardingData]);
 
-  const goToPreviousStep = () => {
-    if (isFirstStep) {
-      return; // We're at the first step
+  const goToPreviousStep = useCallback(() => {
+    if (isFirstStep) return;
+    const prevStep = ONBOARDING_STEPS[currentStepIndex - 1];
+    if (prevStep) {
+      navigate(prevStep.path);
     }
-    navigate(ONBOARDING_STEPS[currentStepIndex - 1].path);
-  };
+  }, [currentStepIndex, isFirstStep, navigate]);
+
+  const progress = ((currentStepIndex + 1) / ONBOARDING_STEPS.length) * 100;
 
   return (
     <OnboardingContext.Provider
@@ -152,64 +182,69 @@ const OnboardingLayout = ({ supabase }: OnboardingLayoutProps) => {
         canContinue,
       }}
     >
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
         <RouterHeader />
-        <main className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="w-full max-w-2xl bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="p-1 bg-primary/10">
-              <div className="flex">
+        <main className="container mx-auto px-4 py-8 md:py-12">
+          <div className="mx-auto max-w-4xl">
+            {/* Progress indicator */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
                 {ONBOARDING_STEPS.map((step, index) => (
-                  <div
-                    key={step.path}
-                    className="flex-1 h-2 rounded-full overflow-hidden"
-                  >
+                  <React.Fragment key={step.path}>
                     <div
-                      className={`h-full ${
-                        index <= currentStepIndex ? "bg-primary" : "bg-gray-200"
+                      className={`flex flex-col items-center ${
+                        index <= currentStepIndex ? 'text-primary' : 'text-muted-foreground'
                       }`}
-                      style={{
-                        width: index === currentStepIndex ? "50%" : "100%",
-                      }}
-                    />
-                  </div>
+                    >
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                          index <= currentStepIndex
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        }`}
+                      >
+                        <step.icon className="h-5 w-5" />
+                      </div>
+                      <span className="mt-2 text-sm font-medium">{step.label}</span>
+                    </div>
+                    {index < ONBOARDING_STEPS.length - 1 && (
+                      <div className="h-0.5 flex-1 bg-border mx-2" />
+                    )}
+                  </React.Fragment>
                 ))}
               </div>
             </div>
 
-            <div className="p-8">
-              <h1 className="text-2xl font-bold mb-1">
-                {ONBOARDING_STEPS[currentStepIndex]?.label || "Onboarding"}
-              </h1>
-              <p className="text-muted-foreground mb-6">
-                Step {currentStepIndex + 1} of {ONBOARDING_STEPS.length}
-              </p>
-
-              <div className="min-h-[300px]">
-                <Outlet />
-              </div>
-
-              <div className="flex justify-between mt-8">
-                <Button
-                  variant="outline"
-                  onClick={goToPreviousStep}
-                  disabled={isFirstStep}
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back
-                </Button>
-
-                <Button
-                  onClick={goToNextStep}
-                  disabled={!canContinue}
-                  className={
-                    !canContinue ? "opacity-50 cursor-not-allowed" : ""
-                  }
-                >
-                  {isLastStep ? "Finish" : "Continue"}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
+            {/* Current step content */}
+            <div className="rounded-lg bg-card p-6 shadow-sm">
+              <Outlet />
             </div>
+
+            {/* Navigation buttons */}
+            <div className="mt-8 flex items-center justify-between">
+              <Button
+                variant="outline"
+                onClick={goToPreviousStep}
+                disabled={isFirstStep || isLoading}
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back
+              </Button>
+              
+              <Button
+                onClick={goToNextStep}
+                disabled={!canContinue || isLoading}
+              >
+                {isLastStep ? 'Finish' : 'Next'}
+                {!isLastStep && <ArrowRight className="ml-2 h-4 w-4" />}
+              </Button>
+            </div>
+
+            {error && (
+              <div className="mt-4 rounded-md bg-destructive/10 p-4 text-destructive">
+                {error}
+              </div>
+            )}
           </div>
         </main>
       </div>

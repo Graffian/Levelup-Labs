@@ -3,8 +3,7 @@ import React from 'react';
 import { useUser } from '@clerk/clerk-react';
 import DashboardHeader from './DashboardHeader';
 import DashboardTabs from './DashboardTabs';
-import { useUserData } from '@/hooks/useUserData';
-import { useCourseProgress } from '@/hooks/useCourseProgress';
+// Removed broken imports for UI-only mode
 import { Star, Award, Calendar } from 'lucide-react';
 
 // Move this helper function to the top, before any usage

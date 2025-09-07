@@ -25,7 +25,11 @@ interface CoursesListProps {
   userProfile?: any; // Accept userProfile for deep linking
 }
 
-const CoursesList = ({ courses, detailed = false, userProfile }: CoursesListProps) => {
+const CoursesList = ({ courses, detailed = false }: { courses: any[]; detailed?: boolean }) => {
+  // Only keep web development course (id: 1 or title contains 'Web Development')
+  const webDevCourses = courses.filter(
+    (course) => course.id === 1 || course.title.toLowerCase().includes('web development')
+  );
   const navigate = useNavigate();
   console.log("here is the course" , courses)
   const handleContinueCourse = (course: Course) => {
@@ -42,8 +46,8 @@ const CoursesList = ({ courses, detailed = false, userProfile }: CoursesListProp
 
   if (detailed) {
     return (
-      <div className="grid gap-6">
-        {courses.map((course) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {webDevCourses.map((course) => (
           <Card key={course.id} className="overflow-hidden border-none shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <div className="h-1 bg-gradient-to-r from-primary/70 to-accent/70"></div>
             <CardHeader>
@@ -52,7 +56,7 @@ const CoursesList = ({ courses, detailed = false, userProfile }: CoursesListProp
                   <CardTitle>{course.title}</CardTitle>
                   <CardDescription className="mt-1">
                     {course.completedModules} of {course.totalModules} modules completed<br/>
-                    <span>Path: {course.time_commitment} / {course.experience_level}</span>
+                    
                   </CardDescription>
                 </div>
                 <div className="relative">

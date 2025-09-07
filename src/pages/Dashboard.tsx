@@ -17,7 +17,6 @@ import { useToast } from '@/hooks/use-toast';
  * - Error logging and reporting
  */
 const Dashboard = () => {
-  const { toast } = useToast();
   const [hasError, setHasError] = useState(false);
   
   /**

@@ -6,7 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Search, Filter, X } from 'lucide-react';
-import { resources } from '@/lib/data';
+// import { resources } from '@/lib/data';
+// Data file has been removed. Use an empty array or stub for resources.
+const resources: any[] = [];
 
 const ResourceLibrary = () => {
   const [searchQuery, setSearchQuery] = useState('');

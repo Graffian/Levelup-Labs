@@ -1,16 +1,14 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookOpen, ExternalLink, Clock, Star } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn } from '../../lib/utils';
 
 export interface ResourceProps {
   id: number;
   title: string;
   description: string;
-  category: string;
   tags: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   duration: string;
@@ -19,18 +17,21 @@ export interface ResourceProps {
   url: string;
 }
 
+
 interface ResourceCardProps {
   resource: ResourceProps;
   className?: string;
 }
 
+
 const ResourceCard = ({ resource, className }: ResourceCardProps) => {
-  const difficultyColors = {
+  // Map difficulty to color classes
+  const difficultyColors: Record<ResourceProps['difficulty'], string> = {
     beginner: 'bg-green-100 text-green-800',
     intermediate: 'bg-blue-100 text-blue-800',
     advanced: 'bg-purple-100 text-purple-800'
   };
-  
+
   return (
     <Card className={cn("overflow-hidden card-hover h-full", className)}>
       <CardHeader className="pb-2">
@@ -50,7 +51,6 @@ const ResourceCard = ({ resource, className }: ResourceCardProps) => {
         <p className="text-sm text-muted-foreground line-clamp-3 min-h-[4.5rem]">
           {resource.description}
         </p>
-        
         <div className="flex flex-wrap gap-2 mt-4">
           {resource.tags.slice(0, 3).map((tag, i) => (
             <Badge key={i} variant="outline" className="bg-secondary/50">
@@ -63,7 +63,6 @@ const ResourceCard = ({ resource, className }: ResourceCardProps) => {
             </Badge>
           )}
         </div>
-        
         <div className="flex items-center justify-between mt-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
@@ -91,6 +90,7 @@ const ResourceCard = ({ resource, className }: ResourceCardProps) => {
       </CardFooter>
     </Card>
   );
-};
+}
+
 
 export default ResourceCard;

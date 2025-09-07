@@ -1,17 +1,56 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { Menu, X, Layers, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { UserButton, useAuth } from '@clerk/clerk-react'
+import { UserButton, useAuth, useUser } from '@clerk/clerk-react';
+import { createSupabaseClient } from '@/components/database/SupabaseSetup';
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, userId, getToken } = useAuth();
+  const { user } = useUser();
+
+  // Create a memoized version of the Supabase client factory
+  const getSupabaseClient = useCallback(async () => {
+    const token = await getToken({ template: 'supabase' });
+    return createSupabaseClient(() => Promise.resolve(token));
+  }, [getToken]);
+
+  useEffect(() => {
+    const handleAuth = async () => {
+      if (isSignedIn && user) {
+        try {
+          const getAuthenticatedClient = await getSupabaseClient();
+          const supabaseWithSession = await getAuthenticatedClient();
+          
+          const { data, error } = await supabaseWithSession
+            .from('user_login_credentials')
+            .select('*')
+            .eq('clerk_user_id', userId)
+            .single();
+
+          if (error && error.code === 'PGRST116') { // No rows found
+            await supabaseWithSession
+              .from('user_login_credentials')
+              .insert([{
+                clerk_user_id: user.id,
+                email_address: user.emailAddresses[0].emailAddress,
+                fullname: user.fullName || '',
+                username: user.username || user.firstName || user.emailAddresses[0].emailAddress.split('@')[0]
+              }]);
+          }
+        } catch (error) {
+          console.error('Error handling user session:', error);
+        }
+      }
+    };
+
+    handleAuth();
+  }, [isSignedIn, user, userId, getSupabaseClient]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,16 +105,15 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center gap-6">
-
             {isSignedIn ? (
-              <UserButton />
+              <UserButton afterSignOutUrl="/" />
             ) : (
               <div className='flex gap-5'>
-
                 <Link to="/signup">
-                  <button className="pt-2 pb-2 px-4 hover:bg-[#e67e22] hover:rounded-[10px] text-white cursor-pointer bg-gradient-to-r from-blue-700 to-blue-400">Get Started</button>
+                  <button className="pt-2 pb-2 px-4 hover:bg-[#e67e22] hover:rounded-[10px] text-white cursor-pointer bg-gradient-to-r from-blue-700 to-blue-400">
+                    Get Started
+                  </button>
                 </Link>
-
               </div>
             )}
           </div>
