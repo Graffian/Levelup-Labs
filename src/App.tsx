@@ -24,7 +24,6 @@ import SignUpPage from "./routes/sign-up";
 import WebDevCourse from "./pages/courses/WebDevCourse";
 import LearningPath from "./pages/course/LearningPath";
 import CourseDetailNew from "./components/course/CourseDetailNew";
-import useUserCredentials from "./hooks/useUser";
 
 
 /**
@@ -70,183 +69,51 @@ const App = () => {
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <ErrorBoundary>
-          <BrowserRouter>
+        <BrowserRouter>
+          <ErrorBoundary>
             <Routes>
               {/* Public routes */}
-              <Route path="/" element={
-                <ErrorBoundary>
-                  <Index />
-                </ErrorBoundary>
-              } />
-              <Route path="/sign-in" element={
-                <ErrorBoundary>
-                  <SignInPage />
-                </ErrorBoundary>
-              } />
-              <Route path="/sign-up" element={
-                <ErrorBoundary>
-                  <SignUpPage />
-                </ErrorBoundary>
-              }>
-                <Route path="sso-callback" element={
-                  <ErrorBoundary>
-                    <SignUpPage />
-                  </ErrorBoundary>
-                } />
-              </Route>
+              <Route path="/" element={<Index />} />
+              <Route path="/sign-in" element={<SignInPage />} />
+              <Route path="/sign-up" element={<SignUpPage />} />
+              <Route path="/sign-up/sso-callback" element={<SignUpPage />} />
 
               {/* Onboarding flow */}
-              <Route path="/onboarding" element={
-                <ErrorBoundary>
-                  <OnboardingLayout />
-                </ErrorBoundary>
-              }>
+              <Route path="/onboarding" element={<OnboardingLayout />}>
                 <Route index element={<OnboardingGoals />} />
                 <Route path="time" element={<OnboardingTime />} />
                 <Route path="experience" element={<OnboardingExperience />} />
               </Route>
 
-              {/* Personalizing Loader */}
-              <Route path="/personalizing/:goalId/:timeId/:experienceId" element={
-                <ErrorBoundary>
-                  <PersonalizingLoader />
-                </ErrorBoundary>
-              } />
+              {/* Other routes */}
+              <Route path="/personalizing/:goalId/:timeId/:experienceId" element={<PersonalizingLoader />} />
+              <Route path="/learning-path/:goalId/:timeId/:experienceId" element={<LearningPath />} />
+              <Route path="/course/:courseSlug" element={<CourseDetailNew />} />
+              <Route path="/course-dashboard" element={<CourseDashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/resources" element={<Resources />} />
 
-              {/* Learning Path Page */}
-              <Route path="/learning-path/:goalId/:timeId/:experienceId" element={
-                <ErrorBoundary>
-                  <LearningPath />
-                </ErrorBoundary>
-              } />
+              {/* Course routes */}
+              <Route path="/courses/coding" element={<WebDevCourse courseId="coding" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/design" element={<WebDevCourse courseId="design" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/marketing" element={<WebDevCourse courseId="marketing" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/business" element={<WebDevCourse courseId="business" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/data-science" element={<WebDevCourse courseId="data-science" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/ai" element={<WebDevCourse courseId="ai" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/cybersecurity" element={<WebDevCourse courseId="cybersecurity" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/cloud-computing" element={<WebDevCourse courseId="cloud-computing" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/mobile-dev" element={<WebDevCourse courseId="mobile-dev" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/game-dev" element={<WebDevCourse courseId="game-dev" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/devops" element={<WebDevCourse courseId="devops" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/blockchain" element={<WebDevCourse courseId="blockchain" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/iot" element={<WebDevCourse courseId="iot" timeCommitment="moderate" experienceLevel="beginner" />} />
+              <Route path="/courses/ar-vr" element={<WebDevCourse courseId="ar-vr" timeCommitment="moderate" experienceLevel="beginner" />} />
 
-              {/* Course Detail Page */}
-              <Route path="/course/:courseSlug" element={
-                <ErrorBoundary>
-                  <CourseDetailNew />
-                </ErrorBoundary>
-              } />
-
-              {/* Main application routes */}
-              <Route path="/course-dashboard" element={
-                <ErrorBoundary>
-                  <CourseDashboard />
-                </ErrorBoundary>
-              } />
-              <Route path="/dashboard" element={
-                <ErrorBoundary>
-                  <Dashboard />
-                </ErrorBoundary>
-              } />
-              <Route path="/resources" element={
-                <ErrorBoundary>
-                  <Resources />
-                </ErrorBoundary>
-              } />
-
-              {/* Specific course routes based on combinations */}
-              {/* Web Development Courses */}
-              <Route path="/courses/coding" element={
-                <ErrorBoundary>
-                  <WebDevCourse courseId="e6904d1a-5748-4524-9535-7955a368e5cb" timeCommitment="moderate" experienceLevel="beginner" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding" element={
-                <ErrorBoundary>
-                  <WebDevCourse courseId="e6904d1a-5748-4524-9535-7955a368e5cb" timeCommitment="moderate" experienceLevel="beginner" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/minimal/beginner" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="minimal" experienceLevel="beginner" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/minimal/novice" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="minimal" experienceLevel="novice" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/minimal/intermediate" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="minimal" experienceLevel="intermediate" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/minimal/advanced" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="minimal" experienceLevel="advanced" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/moderate/beginner" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="moderate" experienceLevel="beginner" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/moderate/novice" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="moderate" experienceLevel="novice" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/moderate/intermediate" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="moderate" experienceLevel="intermediate" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/moderate/advanced" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="moderate" experienceLevel="advanced" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/significant/beginner" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="significant" experienceLevel="beginner" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/significant/novice" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="significant" experienceLevel="novice" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/significant/intermediate" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="significant" experienceLevel="intermediate" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/significant/advanced" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="significant" experienceLevel="advanced" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/intensive/beginner" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="intensive" experienceLevel="beginner" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/intensive/novice" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="intensive" experienceLevel="novice" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/intensive/intermediate" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="intensive" experienceLevel="intermediate" />
-                </ErrorBoundary>
-              } />
-              <Route path="/courses/coding/intensive/advanced" element={
-                <ErrorBoundary>
-                  <WebDevCourse timeCommitment="intensive" experienceLevel="advanced" />
-                </ErrorBoundary>
-              } />
-
-              {/* 404 catch-all route */}
-              <Route path="*" element={
-                <ErrorBoundary>
-                  <NotFound />
-                </ErrorBoundary>
-              } />
+              {/* 404 - Not Found */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </ErrorBoundary>
+          </ErrorBoundary>
+        </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
   );
